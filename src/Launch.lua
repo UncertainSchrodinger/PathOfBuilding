@@ -5,6 +5,7 @@
 -- Program entry point; loads and runs the Main module within a protected environment
 --
 
+print(_VERSION)
 local startTime = GetTime()
 APP_NAME = "Path of Building"
 
@@ -12,7 +13,7 @@ SetWindowTitle(APP_NAME)
 ConExecute("set vid_mode 8")
 ConExecute("set vid_resizable 3")
 
-launch = { }
+launch = {}
 SetMainObject(launch)
 
 function launch:OnInit()
@@ -22,7 +23,7 @@ function launch:OnInit()
 	self.versionBranch = "?"
 	self.versionPlatform = "?"
 	self.lastUpdateCheck = GetTime()
-	self.subScripts = { }
+	self.subScripts = {}
 	self.startTime = startTime
 	local firstRunFile = io.open("first.run", "r")
 	if firstRunFile then
@@ -124,10 +125,10 @@ function launch:OnFrame()
 		SetDrawColor(0, 0, 0, 0.75)
 		DrawImage(nil, 0, 0, screenW, screenH)
 		SetDrawColor(1, 1, 1)
-		DrawString(0, screenH/2, "CENTER", 24, "FIXED", self.doRestart)
+		DrawString(0, screenH / 2, "CENTER", 24, "FIXED", self.doRestart)
 		Restart()
 	end
-	if not self.devMode and (GetTime() - self.lastUpdateCheck) > 1000*60*60*12 then
+	if not self.devMode and (GetTime() - self.lastUpdateCheck) > 1000 * 60 * 60 * 12 then
 		-- Do an update check every 12 hours if the user keeps the program open
 		self:CheckForUpdate(true)
 	end
@@ -264,7 +265,7 @@ function launch:DownloadPage(url, callback, params)
 			easy:setopt(curl.OPT_HTTPHEADER, header)
 		end
 		easy:setopt_url(url)
-		easy:setopt(curl.OPT_USERAGENT, "Path of Building/]]..self.versionNumber..[[")
+		easy:setopt(curl.OPT_USERAGENT, "Path of Building/]] .. self.versionNumber .. [[")
 		easy:setopt(curl.OPT_ACCEPT_ENCODING, "")
 		if requestBody then
 			easy:setopt(curl.OPT_POST, true)
@@ -303,7 +304,7 @@ function launch:DownloadPage(url, callback, params)
 		self.subScripts[id] = {
 			type = "DOWNLOAD",
 			callback = function(responseHeader, responseBody, errMsg)
-				callback({header=responseHeader, body=responseBody}, errMsg)
+				callback({ header = responseHeader, body = responseBody }, errMsg)
 			end
 		}
 	end
@@ -313,7 +314,7 @@ function launch:ApplyUpdate(mode)
 	if mode == "basic" then
 		-- Need to revert to the basic environment to fully apply the update
 		LoadModule("UpdateApply", "Update/opFile.txt")
-		SpawnProcess(GetRuntimePath()..'/Update', 'UpdateApply.lua Update/opFileRuntime.txt')
+		SpawnProcess(GetRuntimePath() .. '/Update', 'UpdateApply.lua Update/opFileRuntime.txt')
 		Exit()
 	elseif mode == "normal" then
 		-- Update can be applied while normal environment is running
@@ -344,7 +345,7 @@ end
 
 function launch:ShowPrompt(r, g, b, str, func)
 	self.promptMsg = str
-	self.promptCol = {r, g, b}
+	self.promptCol = { r, g, b }
 	self.promptFunc = func or function(key)
 		if key == "RETURN" or key == "ESCAPE" then
 			return true
@@ -356,11 +357,12 @@ function launch:ShowPrompt(r, g, b, str, func)
 end
 
 function launch:ShowErrMsg(fmt, ...)
+	print("^1Error:\n\n^0" .. string.format(fmt, ...) .. "\n" .. self.versionNumber .. "\n^0Press Enter/Escape to dismiss, or F5 to restart the application.")
 	if not self.promptMsg then
-		local version = self.versionNumber and 
-			"^8v"..self.versionNumber..(self.versionBranch and " "..self.versionBranch or "")
+		local version = self.versionNumber and
+			"^8v" .. self.versionNumber .. (self.versionBranch and " " .. self.versionBranch or "")
 			or ""
-		self:ShowPrompt(1, 0, 0, "^1Error:\n\n^0"..string.format(fmt, ...).."\n"..version.."\n^0Press Enter/Escape to dismiss, or F5 to restart the application.")
+		self:ShowPrompt(1, 0, 0, "^1Error:\n\n^0" .. string.format(fmt, ...) .. "\n" .. version .. "\n^0Press Enter/Escape to dismiss, or F5 to restart the application.")
 	end
 end
 
@@ -380,7 +382,7 @@ function launch:DrawPopup(r, g, b, fmt, ...)
 	DrawImage(nil, 0, 0, screenW, screenH)
 	local txt = string.format(fmt, ...)
 	local w = DrawStringWidth(20, "VAR", txt) + 20
-	local h = (#txt:gsub("[^\n]","") + 2) * 20
+	local h = (#txt:gsub("[^\n]", "") + 2) * 20
 	local ox = (screenW - w) / 2
 	local oy = (screenH - h) / 2
 	SetDrawColor(1, 1, 1)
