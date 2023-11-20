@@ -1,0 +1,12 @@
+[package]
+name = "PathOfBuilding"
+version = "2.34.1"
+edition = "2021"
+
+[[bin]]
+bench = false
+path = "evloop/main.rs"
+name = "path-of-building"
+
+[dependencies]
+

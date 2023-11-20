@@ -33,3 +33,5 @@ src/Export/ggpk/*.dll
 
 # Timeless Jewels
 src/Data/TimelessJewelData/*.bin
+
+/target
