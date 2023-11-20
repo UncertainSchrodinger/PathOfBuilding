@@ -9,4 +9,4 @@ path = "evloop/main.rs"
 name = "path-of-building"
 
 [dependencies]
-
+rlua = { version = "0.19.7", default-features = false, features = ["system-luajit"] }
