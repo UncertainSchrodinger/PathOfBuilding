@@ -15,12 +15,12 @@ local function makeSkillDataMod(dataKey, dataValue, ...)
 	return makeSkillMod("SkillData", "LIST", { key = dataKey, value = dataValue }, 0, 0, ...)
 end
 dofile("../Data/Global.lua")
-local skillStatMap = LoadModule("../Data/SkillStatMap.lua", makeSkillMod, makeFlagMod, makeSkillDataMod)
+local skillStatMap = require("../Data/SkillStatMap.lua").setup(makeSkillMod, makeFlagMod, makeSkillDataMod)
 
 local function tableToString(tbl, pre)
 	pre = pre or ""
 	local tableString = "{ "
-	local outNames = { }
+	local outNames = {}
 	for name in pairs(tbl) do
 		table.insert(outNames, name)
 	end
@@ -57,15 +57,15 @@ local itemClassMap = {
 	["Unarmed"] = "None",
 }
 
-local directiveTable = { }
+local directiveTable = {}
 
 -- #monster <MonsterId> [<Name>] [<ExtraSkills>]
 directiveTable.monster = function(state, args, out)
 	state.varietyId = nil
 	state.name = nil
 	state.limit = nil
-	state.extraModList = { }
-	state.extraSkillList = { }
+	state.extraModList = {}
+	state.extraSkillList = {}
 	for arg in args:gmatch("%S+") do
 		if state.varietyId == nil then
 			state.varietyId = arg
@@ -102,12 +102,12 @@ end
 directiveTable.emit = function(state, args, out)
 	local monsterVariety = dat("MonsterVarieties"):GetRow("Id", state.varietyId)
 	if not monsterVariety then
-		print("Invalid Variety: "..state.varietyId)
+		print("Invalid Variety: " .. state.varietyId)
 		return
 	end
 	out:write('minions["', state.name, '"] = {\n')
 	out:write('\tname = "', monsterVariety.Name, '",\n')
-	out:write('\tlife = ', (monsterVariety.LifeMultiplier/100), ',\n')
+	out:write('\tlife = ', (monsterVariety.LifeMultiplier / 100), ',\n')
 	if monsterVariety.Type.EnergyShield ~= 0 then
 		out:write('\tenergyShield = ', (0.4 * monsterVariety.Type.EnergyShield / 100), ',\n')
 	end
@@ -118,9 +118,9 @@ directiveTable.emit = function(state, args, out)
 	out:write('\tcoldResist = ', monsterVariety.Type.Resistances.ColdMerciless, ',\n')
 	out:write('\tlightningResist = ', monsterVariety.Type.Resistances.LightningMerciless, ',\n')
 	out:write('\tchaosResist = ', monsterVariety.Type.Resistances.ChaosMerciless, ',\n')
-	out:write('\tdamage = ', (monsterVariety.DamageMultiplier/100), ',\n')
+	out:write('\tdamage = ', (monsterVariety.DamageMultiplier / 100), ',\n')
 	out:write('\tdamageSpread = ', (monsterVariety.Type.DamageSpread / 100), ',\n')
-	out:write('\tattackTime = ', (monsterVariety.AttackDuration/1000), ',\n')
+	out:write('\tattackTime = ', (monsterVariety.AttackDuration / 1000), ',\n')
 	out:write('\tattackRange = ', monsterVariety.MaximumAttackRange, ',\n')
 	out:write('\taccuracy = ', monsterVariety.Type.Accuracy / 100, ',\n')
 	for _, mod in ipairs(monsterVariety.Mods) do
@@ -149,7 +149,7 @@ directiveTable.emit = function(state, args, out)
 		out:write('\t\t"', skill, '",\n')
 	end
 	out:write('\t},\n')
-	local modList = { }
+	local modList = {}
 	for _, mod in ipairs(monsterVariety.Mods) do
 		table.insert(modList, mod)
 	end
@@ -160,12 +160,12 @@ directiveTable.emit = function(state, args, out)
 	for _, mod in ipairs(modList) do
 		local modStats = ""
 		for i = 1, 6 do
-			if mod["Stat"..i] then
-				modStats = ' [' .. mod["Stat"..i].Id .. ' = ' .. mod["Stat"..i.."Value"][1] .. ']'
-				if skillStatMap[mod["Stat"..i].Id] then
-					local newMod = skillStatMap[mod["Stat"..i].Id][1]
+			if mod["Stat" .. i] then
+				modStats = ' [' .. mod["Stat" .. i].Id .. ' = ' .. mod["Stat" .. i .. "Value"][1] .. ']'
+				if skillStatMap[mod["Stat" .. i].Id] then
+					local newMod = skillStatMap[mod["Stat" .. i].Id][1]
 					--mod("Speed", "INC", -80, ModFlag.Cast, KeywordFlag.Curse)
-					out:write('\t\tmod("', newMod.name, '", "', newMod.type, '", ', newMod.value and tableToString(newMod.value) or (skillStatMap[mod["Stat"..i].Id].value or mod["Stat"..i.."Value"][1] * (skillStatMap[mod["Stat"..i].Id].mult or 1) / (skillStatMap[mod["Stat"..i].Id].div or 1)), ', ', newMod.flags or 0, ', ', newMod.keywordFlags or 0)
+					out:write('\t\tmod("', newMod.name, '", "', newMod.type, '", ', newMod.value and tableToString(newMod.value) or (skillStatMap[mod["Stat" .. i].Id].value or mod["Stat" .. i .. "Value"][1] * (skillStatMap[mod["Stat" .. i].Id].mult or 1) / (skillStatMap[mod["Stat" .. i].Id].div or 1)), ', ', newMod.flags or 0, ', ', newMod.keywordFlags or 0)
 					for _, extra in ipairs(newMod) do
 						out:write(', ', tableToString(extra))
 					end
@@ -189,7 +189,7 @@ directiveTable.spectre = function(state, args, out)
 	directiveTable.emit(state, "", out)
 end
 
-for _, name in pairs({"Spectres","Minions"}) do
+for _, name in pairs({ "Spectres", "Minions" }) do
 	processTemplateFile(name, "Minions/", "../Data/", directiveTable)
 end
 
