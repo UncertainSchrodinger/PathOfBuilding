@@ -66,7 +66,7 @@ end
 local function processMod(grantedEffect, mod)
 	mod.source = grantedEffect.modSource
 	if type(mod.value) == "table" and mod.value.mod then
-		mod.value.mod.source = "Skill:"..grantedEffect.id
+		mod.value.mod.source = "Skill:" .. grantedEffect.id
 	end
 	for _, tag in ipairs(mod) do
 		if tag.type == "GlobalEffect" then
@@ -80,58 +80,58 @@ end
 -- Common Data --
 -----------------
 
-data = { }
+data = {}
 
 data.powerStatList = {
-	{ stat=nil, label="Offence/Defence", combinedOffDef=true, ignoreForItems=true },
-	{ stat=nil, label="Name", itemField="Name", ignoreForNodes=true, reverseSort=true, transform=function(value) return value:gsub("^The ","") end},
-	{ stat="FullDPS", label="Full DPS" },
-	{ stat="CombinedDPS", label="Combined DPS" },
-	{ stat="TotalDPS", label="Hit DPS" },
-	{ stat="WithImpaleDPS", label="Impale + Hit DPS" },
-	{ stat="AverageDamage", label="Average Hit" },
-	{ stat="Speed", label="Attack/Cast Speed" },
-	{ stat="TotalDot", label="DoT DPS" },
-	{ stat="BleedDPS", label="Bleed DPS" },
-	{ stat="IgniteDPS", label="Ignite DPS" },
-	{ stat="PoisonDPS", label="Poison DPS" },
-	{ stat="Life", label="Life" },
-	{ stat="LifeRegen", label="Life regen" },
-	{ stat="LifeLeechRate", label="Life leech" },
-	{ stat="Armour", label="Armour" },
-	{ stat="Evasion", label="Evasion" },
-	{ stat="EnergyShield", label="Energy Shield" },
-	{ stat="EnergyShieldRecoveryCap", label="Recoverable ES" },
-	{ stat="EnergyShieldRegen", label="Energy Shield regen" },
-	{ stat="EnergyShieldLeechRate", label="Energy Shield leech" },
-	{ stat="Mana", label="Mana" },
-	{ stat="ManaRegen", label="Mana regen" },
-	{ stat="ManaLeechRate", label="Mana leech" },
-	{ stat="Ward", label="Ward" },
-	{ stat="Str", label="Strength" },
-	{ stat="Dex", label="Dexterity" },
-	{ stat="Int", label="Intelligence" },
-	{ stat="TotalAttr", label="Total Attributes" },
-	{ stat="MeleeAvoidChance", label="Melee avoid chance" },
-	{ stat="SpellAvoidChance", label="Spell avoid chance" },
-	{ stat="ProjectileAvoidChance", label="Projectile avoid chance" },
-	{ stat="TotalEHP", label="Effective Hit Pool" },
-	{ stat="SecondMinimalMaximumHitTaken", label="Eff. Maximum Hit Taken" },
-	{ stat="PhysicalTakenHit", label="Taken Phys dmg", transform=function(value) return -value end },
-	{ stat="LightningTakenHit", label="Taken Lightning dmg", transform=function(value) return -value end },
-	{ stat="ColdTakenHit", label="Taken Cold dmg", transform=function(value) return -value end },
-	{ stat="FireTakenHit", label="Taken Fire dmg", transform=function(value) return -value end },
-	{ stat="ChaosTakenHit", label="Taken Chaos dmg", transform=function(value) return -value end },
-	{ stat="CritChance", label="Crit Chance" },
-	{ stat="CritMultiplier", label="Crit Multiplier" },
-	{ stat="BleedChance", label="Bleed Chance" },
-	{ stat="FreezeChance", label="Freeze Chance" },
-	{ stat="IgniteChance", label="Ignite Chance" },
-	{ stat="ShockChance", label="Shock Chance" },
-	{ stat="EffectiveMovementSpeedMod", label="Move speed" },
-	{ stat="BlockChance", label="Block Chance" },
-	{ stat="SpellBlockChance", label="Spell Block Chance" },
-	{ stat="SpellSuppressionChance", label="Spell Suppression Chance" },
+	{ stat = nil,                            label = "Offence/Defence",         combinedOffDef = true,                        ignoreForItems = true },
+	{ stat = nil,                            label = "Name",                    itemField = "Name",                           ignoreForNodes = true, reverseSort = true, transform = function(value) return value:gsub("^The ", "") end },
+	{ stat = "FullDPS",                      label = "Full DPS" },
+	{ stat = "CombinedDPS",                  label = "Combined DPS" },
+	{ stat = "TotalDPS",                     label = "Hit DPS" },
+	{ stat = "WithImpaleDPS",                label = "Impale + Hit DPS" },
+	{ stat = "AverageDamage",                label = "Average Hit" },
+	{ stat = "Speed",                        label = "Attack/Cast Speed" },
+	{ stat = "TotalDot",                     label = "DoT DPS" },
+	{ stat = "BleedDPS",                     label = "Bleed DPS" },
+	{ stat = "IgniteDPS",                    label = "Ignite DPS" },
+	{ stat = "PoisonDPS",                    label = "Poison DPS" },
+	{ stat = "Life",                         label = "Life" },
+	{ stat = "LifeRegen",                    label = "Life regen" },
+	{ stat = "LifeLeechRate",                label = "Life leech" },
+	{ stat = "Armour",                       label = "Armour" },
+	{ stat = "Evasion",                      label = "Evasion" },
+	{ stat = "EnergyShield",                 label = "Energy Shield" },
+	{ stat = "EnergyShieldRecoveryCap",      label = "Recoverable ES" },
+	{ stat = "EnergyShieldRegen",            label = "Energy Shield regen" },
+	{ stat = "EnergyShieldLeechRate",        label = "Energy Shield leech" },
+	{ stat = "Mana",                         label = "Mana" },
+	{ stat = "ManaRegen",                    label = "Mana regen" },
+	{ stat = "ManaLeechRate",                label = "Mana leech" },
+	{ stat = "Ward",                         label = "Ward" },
+	{ stat = "Str",                          label = "Strength" },
+	{ stat = "Dex",                          label = "Dexterity" },
+	{ stat = "Int",                          label = "Intelligence" },
+	{ stat = "TotalAttr",                    label = "Total Attributes" },
+	{ stat = "MeleeAvoidChance",             label = "Melee avoid chance" },
+	{ stat = "SpellAvoidChance",             label = "Spell avoid chance" },
+	{ stat = "ProjectileAvoidChance",        label = "Projectile avoid chance" },
+	{ stat = "TotalEHP",                     label = "Effective Hit Pool" },
+	{ stat = "SecondMinimalMaximumHitTaken", label = "Eff. Maximum Hit Taken" },
+	{ stat = "PhysicalTakenHit",             label = "Taken Phys dmg",          transform = function(value) return -value end },
+	{ stat = "LightningTakenHit",            label = "Taken Lightning dmg",     transform = function(value) return -value end },
+	{ stat = "ColdTakenHit",                 label = "Taken Cold dmg",          transform = function(value) return -value end },
+	{ stat = "FireTakenHit",                 label = "Taken Fire dmg",          transform = function(value) return -value end },
+	{ stat = "ChaosTakenHit",                label = "Taken Chaos dmg",         transform = function(value) return -value end },
+	{ stat = "CritChance",                   label = "Crit Chance" },
+	{ stat = "CritMultiplier",               label = "Crit Multiplier" },
+	{ stat = "BleedChance",                  label = "Bleed Chance" },
+	{ stat = "FreezeChance",                 label = "Freeze Chance" },
+	{ stat = "IgniteChance",                 label = "Ignite Chance" },
+	{ stat = "ShockChance",                  label = "Shock Chance" },
+	{ stat = "EffectiveMovementSpeedMod",    label = "Move speed" },
+	{ stat = "BlockChance",                  label = "Block Chance" },
+	{ stat = "SpellBlockChance",             label = "Spell Block Chance" },
+	{ stat = "SpellSuppressionChance",       label = "Spell Suppression Chance" },
 }
 
 data.skillColorMap = { colorCodes.STRENGTH, colorCodes.DEXTERITY, colorCodes.INTELLIGENCE, colorCodes.NORMAL }
@@ -158,22 +158,22 @@ end
 
 data.jewelRadii = {
 	["3_15"] = {
-		{ inner = 0, outer = 800, col = "^xBB6600", label = "Small" },
-		{ inner = 0, outer = 1200, col = "^x66FFCC", label = "Medium" },
-		{ inner = 0, outer = 1500, col = "^x2222CC", label = "Large" },
+		{ inner = 0,    outer = 800,  col = "^xBB6600", label = "Small" },
+		{ inner = 0,    outer = 1200, col = "^x66FFCC", label = "Medium" },
+		{ inner = 0,    outer = 1500, col = "^x2222CC", label = "Large" },
 
-		{ inner = 850, outer = 1100, col = "^xD35400", label = "Variable" },
+		{ inner = 850,  outer = 1100, col = "^xD35400", label = "Variable" },
 		{ inner = 1150, outer = 1400, col = "^x66FFCC", label = "Variable" },
 		{ inner = 1450, outer = 1700, col = "^x2222CC", label = "Variable" },
 		{ inner = 1750, outer = 2000, col = "^xC100FF", label = "Variable" },
 		{ inner = 1750, outer = 2000, col = "^xC100FF", label = "Variable" },
 	},
 	["3_16"] = {
-		{ inner = 0, outer = 960, col = "^xBB6600", label = "Small" },
-		{ inner = 0, outer = 1440, col = "^x66FFCC", label = "Medium" },
-		{ inner = 0, outer = 1800, col = "^x2222CC", label = "Large" },
+		{ inner = 0,    outer = 960,  col = "^xBB6600", label = "Small" },
+		{ inner = 0,    outer = 1440, col = "^x66FFCC", label = "Medium" },
+		{ inner = 0,    outer = 1800, col = "^x2222CC", label = "Large" },
 
-		{ inner = 960, outer = 1320, col = "^xD35400", label = "Variable" },
+		{ inner = 960,  outer = 1320, col = "^xD35400", label = "Variable" },
 		{ inner = 1320, outer = 1680, col = "^x66FFCC", label = "Variable" },
 		{ inner = 1680, outer = 2040, col = "^x2222CC", label = "Variable" },
 		{ inner = 2040, outer = 2400, col = "^xC100FF", label = "Variable" },
@@ -186,13 +186,13 @@ data.jewelRadius = data.setJewelRadiiGlobally(latestTreeVersion)
 data.enchantmentSource = {
 	{ name = "ENKINDLING", label = "Enkindling Orb" },
 	{ name = "INSTILLING", label = "Instilling Orb" },
-	{ name = "HEIST", label = "Heist" },
-	{ name = "HARVEST", label = "Harvest" },
+	{ name = "HEIST",      label = "Heist" },
+	{ name = "HARVEST",    label = "Harvest" },
 	{ name = "DEDICATION", label = "Dedication to the Goddess" },
-	{ name = "ENDGAME", label = "Eternal Labyrinth" },
-	{ name = "MERCILESS", label = "Merciless Labyrinth" },
-	{ name = "CRUEL", label = "Cruel Labyrinth" },
-	{ name = "NORMAL", label = "Normal Labyrinth" },
+	{ name = "ENDGAME",    label = "Eternal Labyrinth" },
+	{ name = "MERCILESS",  label = "Merciless Labyrinth" },
+	{ name = "CRUEL",      label = "Cruel Labyrinth" },
+	{ name = "NORMAL",     label = "Normal Labyrinth" },
 }
 
 local maxPenaltyFreeAreaLevel = 70
@@ -245,14 +245,14 @@ data.unarmedWeaponData = {
 
 data.cursePriority = {
 	["Temporal Chains"] = 1, -- Despair and Elemental Weakness override Temporal Chains.
-	["Enfeeble"] = 2, -- Elemental Weakness and Vulnerability override Enfeeble.
-	["Vulnerability"] = 3, -- Despair and Elemental Weakness override Vulnerability. Vulnerability was reworked in 3.1.0.
+	["Enfeeble"] = 2,        -- Elemental Weakness and Vulnerability override Enfeeble.
+	["Vulnerability"] = 3,   -- Despair and Elemental Weakness override Vulnerability. Vulnerability was reworked in 3.1.0.
 	["Elemental Weakness"] = 4, -- Despair and Flammability override Elemental Weakness.
-	["Flammability"] = 5, -- Frostbite overrides Flammability.
-	["Frostbite"] = 6, -- Conductivity overrides Frostbite.
+	["Flammability"] = 5,    -- Frostbite overrides Flammability.
+	["Frostbite"] = 6,       -- Conductivity overrides Frostbite.
 	["Conductivity"] = 7,
-	["Despair"] = 8, -- Despair was created in 3.1.0.
-	["Punishment"] = 9, -- Punishment was reworked in 3.12.0.
+	["Despair"] = 8,         -- Despair was created in 3.1.0.
+	["Punishment"] = 9,      -- Punishment was reworked in 3.12.0.
 	["Warlord's Mark"] = 10,
 	["Assassin's Mark"] = 11,
 	["Sniper's Mark"] = 12,
@@ -596,27 +596,27 @@ Bosses' armour and evasion multiplier are calculated using the average of the bo
 Standard Boss adds the following modifiers:
 	+40% to enemy Elemental Resistances
 	+25% to enemy ^xD02090Chaos Resistance
-	^7]]..tostring(m_floor(data.misc.stdBossDPSMult * 100))..[[% of monster Damage of each type
-	]]..tostring(m_floor(data.misc.stdBossDPSMult * 4.4 * 100))..[[% of monster Damage total
+	^7]] .. tostring(m_floor(data.misc.stdBossDPSMult * 100)) .. [[% of monster Damage of each type
+	]] .. tostring(m_floor(data.misc.stdBossDPSMult * 4.4 * 100)) .. [[% of monster Damage total
 
 Guardian / Pinnacle Boss adds the following modifiers:
 	+50% to enemy Elemental Resistances
 	+30% to enemy ^xD02090Chaos Resistance
-	^7]]..tostring(m_floor(data.bossStats.PinnacleArmourMean))..[[% of monster Armour
-	]]..tostring(m_floor(data.bossStats.PinnacleEvasionMean))..[[% of monster ^x33FF77Evasion
-	^7]]..tostring(m_floor(data.misc.pinnacleBossDPSMult * 100))..[[% of monster Damage of each type
-	]]..tostring(m_floor(data.misc.pinnacleBossDPSMult * 4.4 * 100))..[[% of monster Damage total
-	]]..tostring(data.misc.pinnacleBossPen)..[[% penetration
+	^7]] .. tostring(m_floor(data.bossStats.PinnacleArmourMean)) .. [[% of monster Armour
+	]] .. tostring(m_floor(data.bossStats.PinnacleEvasionMean)) .. [[% of monster ^x33FF77Evasion
+	^7]] .. tostring(m_floor(data.misc.pinnacleBossDPSMult * 100)) .. [[% of monster Damage of each type
+	]] .. tostring(m_floor(data.misc.pinnacleBossDPSMult * 4.4 * 100)) .. [[% of monster Damage total
+	]] .. tostring(data.misc.pinnacleBossPen) .. [[% penetration
 
 Uber Pinnacle Boss adds the following modifiers:
 	+50% to enemy Elemental Resistances
 	+30% to enemy ^xD02090Chaos Resistance
-	^7]]..tostring(m_floor(data.bossStats.UberArmourMean))..[[% of monster Armour
-	]]..tostring(m_floor(data.bossStats.UberEvasionMean))..[[% of monster ^x33FF77Evasion
+	^7]] .. tostring(m_floor(data.bossStats.UberArmourMean)) .. [[% of monster Armour
+	]] .. tostring(m_floor(data.bossStats.UberEvasionMean)) .. [[% of monster ^x33FF77Evasion
 	^770% less to enemy Damage taken
-	]]..tostring(m_floor(data.misc.uberBossDPSMult * 100))..[[% of monster Damage of each type
-	]]..tostring(m_floor(data.misc.uberBossDPSMult * 4.25 * 100))..[[% of monster Damage total
-	]]..tostring(data.misc.uberBossPen)..[[% penetration]]
+	]] .. tostring(m_floor(data.misc.uberBossDPSMult * 100)) .. [[% of monster Damage of each type
+	]] .. tostring(m_floor(data.misc.uberBossDPSMult * 4.25 * 100)) .. [[% of monster Damage total
+	]] .. tostring(data.misc.uberBossPen) .. [[% penetration]]
 end
 
 -- Misc data tables
@@ -649,7 +649,7 @@ data.crucible = LoadModule("Data/Crucible")
 data.pantheons = LoadModule("Data/Pantheons")
 data.costs = LoadModule("Data/Costs")
 do
-	local map = { }
+	local map = {}
 	for i, value in ipairs(data.costs) do
 		map[value.Resource] = i
 	end
@@ -704,7 +704,7 @@ data.clusterJewels = LoadModule("Data/ClusterJewels")
 
 -- Create a quick lookup cache from cluster jewel skill to the notables which use that skill
 ---@type table<string, table<string>>
-local clusterSkillToNotables = { }
+local clusterSkillToNotables = {}
 for notableKey, notableInfo in pairs(data.itemMods.JewelCluster) do
 	-- Translate the notable key to its name
 	local notableName = notableInfo[1] and notableInfo[1]:match("1 Added Passive Skill is (.*)")
@@ -712,7 +712,7 @@ for notableKey, notableInfo in pairs(data.itemMods.JewelCluster) do
 		for weightIndex, clusterSkill in pairs(notableInfo.weightKey) do
 			if notableInfo.weightVal[weightIndex] > 0 then
 				if not clusterSkillToNotables[clusterSkill] then
-					clusterSkillToNotables[clusterSkill] = { }
+					clusterSkillToNotables[clusterSkill] = {}
 				end
 				table.insert(clusterSkillToNotables[clusterSkill], notableName)
 			end
@@ -721,16 +721,16 @@ for notableKey, notableInfo in pairs(data.itemMods.JewelCluster) do
 end
 
 -- Create easy lookup from cluster node name -> cluster jewel size and types
-data.clusterJewelInfoForNotable = { }
+data.clusterJewelInfoForNotable = {}
 for size, jewel in pairs(data.clusterJewels.jewels) do
 	for skill, skillInfo in pairs(jewel.skills) do
 		local notables = clusterSkillToNotables[skill]
 		if notables then
 			for _, notableKey in ipairs(notables) do
 				if not data.clusterJewelInfoForNotable[notableKey] then
-					data.clusterJewelInfoForNotable[notableKey] = { }
-					data.clusterJewelInfoForNotable[notableKey].jewelTypes = { }
-					data.clusterJewelInfoForNotable[notableKey].size = { }
+					data.clusterJewelInfoForNotable[notableKey] = {}
+					data.clusterJewelInfoForNotable[notableKey].jewelTypes = {}
+					data.clusterJewelInfoForNotable[notableKey].size = {}
 				end
 				local curJewelInfo = data.clusterJewelInfoForNotable[notableKey]
 				curJewelInfo.size[size] = true
@@ -764,7 +764,7 @@ data.timelessJewelSeedMax = {
 data.timelessJewelTradeIDs = LoadModule("Data/TimelessJewelData/LegionTradeIds")
 data.timelessJewelAdditions = 94 -- #legionAdditions
 data.nodeIDList = LoadModule("Data/TimelessJewelData/NodeIndexMapping")
-data.timelessJewelLUTs = { }
+data.timelessJewelLUTs = {}
 data.readLUT, data.repairLUTs = LoadModule("Modules/DataLegionLookUpTableHelper")
 
 -- this runs if the "size" key is missing from nodeIDList and attempts to rebuild all jewel LUTs and the nodeIDList
@@ -774,7 +774,7 @@ if not data.nodeIDList.size and launch.devMode then
 end
 
 -- Load skills
-data.skills = { }
+data.skills = {}
 data.skillStatMap = LoadModule("Data/SkillStatMap", makeSkillMod, makeFlagMod, makeSkillDataMod)
 data.skillStatMapMeta = {
 	__index = function(t, key)
@@ -790,13 +790,13 @@ data.skillStatMapMeta = {
 	end
 }
 for _, type in pairs(skillTypes) do
-	LoadModule("Data/Skills/"..type, data.skills, makeSkillMod, makeFlagMod, makeSkillDataMod)
+	LoadModule("Data/Skills/" .. type, data.skills, makeSkillMod, makeFlagMod, makeSkillDataMod)
 end
 for skillId, grantedEffect in pairs(data.skills) do
 	grantedEffect.id = skillId
-	grantedEffect.modSource = "Skill:"..skillId
+	grantedEffect.modSource = "Skill:" .. skillId
 	-- Add sources for skill mods, and check for global effects
-	for _, list in pairs({grantedEffect.baseMods, grantedEffect.qualityMods, grantedEffect.levelMods}) do
+	for _, list in pairs({ grantedEffect.baseMods, grantedEffect.qualityMods, grantedEffect.levelMods }) do
 		for _, mod in pairs(list) do
 			if mod.name then
 				processMod(grantedEffect, mod)
@@ -808,7 +808,7 @@ for skillId, grantedEffect in pairs(data.skills) do
 		end
 	end
 	-- Install stat map metatable
-	grantedEffect.statMap = grantedEffect.statMap or { }
+	grantedEffect.statMap = grantedEffect.statMap or {}
 	setmetatable(grantedEffect.statMap, data.skillStatMapMeta)
 	grantedEffect.statMap._grantedEffect = grantedEffect
 	for _, map in pairs(grantedEffect.statMap) do
@@ -820,8 +820,8 @@ end
 
 -- Load gems
 data.gems = LoadModule("Data/Gems")
-data.gemForSkill = { }
-data.gemForBaseName = { }
+data.gemForSkill = {}
+data.gemForBaseName = {}
 for gemId, gem in pairs(data.gems) do
 	gem.id = gemId
 	gem.grantedEffect = data.skills[gem.grantedEffectId]
@@ -840,9 +840,9 @@ for gemId, gem in pairs(data.gems) do
 end
 
 -- Load minions
-data.minions = { }
+data.minions = {}
 LoadModule("Data/Minions", data.minions, makeSkillMod)
-data.spectres = { }
+data.spectres = {}
 LoadModule("Data/Spectres", data.spectres, makeSkillMod)
 for name, spectre in pairs(data.spectres) do
 	spectre.limit = "ActiveSpectreLimit"
@@ -850,11 +850,11 @@ for name, spectre in pairs(data.spectres) do
 end
 for _, minion in pairs(data.minions) do
 	for _, mod in ipairs(minion.modList) do
-		mod.source = "Minion:"..minion.name
+		mod.source = "Minion:" .. minion.name
 	end
 end
 data.printMissingMinionSkills = function()
-	local missing = { }
+	local missing = {}
 	for _, minion in pairs(data.minions) do
 		for _, skillId in ipairs(minion.skillList) do
 			if not data.skills[skillId] and not missing[skillId] then
@@ -866,24 +866,24 @@ data.printMissingMinionSkills = function()
 end
 
 -- Item bases
-data.itemBases = { }
+data.itemBases = {}
 for _, type in pairs(itemTypes) do
-	LoadModule("Data/Bases/"..type, data.itemBases)
+	LoadModule("Data/Bases/" .. type, data.itemBases)
 end
 
 -- Build lists of item bases, separated by type
-data.itemBaseLists = { }
+data.itemBaseLists = {}
 for name, base in pairs(data.itemBases) do
 	if not base.hidden then
 		local type = base.type
 		if base.subType then
 			type = type .. ": " .. base.subType
 		end
-		data.itemBaseLists[type] = data.itemBaseLists[type] or { }
-		table.insert(data.itemBaseLists[type], { label = name:gsub(" %(.+%)",""), name = name, base = base })
+		data.itemBaseLists[type] = data.itemBaseLists[type] or {}
+		table.insert(data.itemBaseLists[type], { label = name:gsub(" %(.+%)", ""), name = name, base = base })
 	end
 end
-data.itemBaseTypeList = { }
+data.itemBaseTypeList = {}
 for type, list in pairs(data.itemBaseLists) do
 	table.insert(data.itemBaseTypeList, type)
 	table.sort(list, function(a, b)
@@ -908,15 +908,15 @@ table.sort(data.itemBaseTypeList)
 data.rares = LoadModule("Data/Rares")
 
 -- Uniques (loaded after version-specific data because reasons)
-data.uniques = { }
+data.uniques = {}
 for _, type in pairs(itemTypes) do
-	data.uniques[type] = LoadModule("Data/Uniques/"..type)
+	data.uniques[type] = LoadModule("Data/Uniques/" .. type)
 end
 data.uniques['race'] = LoadModule("Data/Uniques/Special/race")
-data.uniqueMods = { }
-data.uniqueMods["Watcher's Eye"] = { }
+data.uniqueMods = {}
+data.uniqueMods["Watcher's Eye"] = {}
 local unsortedMods = LoadModule("Data/Uniques/Special/WatchersEye")
-local sortedMods = { }
+local sortedMods = {}
 for modId in pairs(unsortedMods) do
 	table.insert(sortedMods, modId)
 end
