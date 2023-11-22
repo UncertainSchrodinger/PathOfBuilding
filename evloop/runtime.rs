@@ -1,4 +1,10 @@
-use mlua::{Function, Lua, Result, Table};
+use std::{result, sync::Arc};
+
+use curl::easy::{Easy2, Handler, WriteError};
+use mlua::{
+    AnyUserData, Error, Function, Lua, RegistryKey, Result, Table, UserData, UserDataFields,
+    UserDataMethods,
+};
 
 pub struct PathOfBuilding {}
 
@@ -45,12 +51,121 @@ fn show_err_message(_ctx: &Lua, message: String) -> Result<()> {
     Ok(())
 }
 
+struct Collector(Vec<u8>, Vec<u8>);
+
+impl Handler for Collector {
+    fn write(&mut self, data: &[u8]) -> result::Result<usize, WriteError> {
+        self.0.extend_from_slice(data);
+        Ok(data.len())
+    }
+
+    fn header(&mut self, data: &[u8]) -> bool {
+        self.1.extend_from_slice(data);
+        true
+    }
+}
+
+struct EasyWrapper {
+    easy2: Easy2<Collector>,
+    write_callback_key: Option<RegistryKey>,
+    heeader_callback_key: Option<RegistryKey>,
+}
+
+// TODO: This does not work at all. I think I need to use a registry or something similar here?
+// Maybe it's because from this Rust perspective we cannot guarantee it's safe to store references
+// as once Lua returns they might be collected or gone?
+impl UserData for EasyWrapper {
+    fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
+        // setopt_url
+        methods.add_method_mut("setopt_url", |_, this, value: String| {
+            match this.easy2.url(&value) {
+                Ok(it) => it,
+                Err(err) => return Err(Error::ExternalError(Arc::new(err))),
+            };
+            Ok(())
+        });
+
+        // setopt_useragent
+        methods.add_method_mut("setopt_useragent", |_, this, value: String| {
+            match this.easy2.useragent(&value) {
+                Ok(it) => it,
+                Err(err) => return Err(Error::ExternalError(Arc::new(err))),
+            };
+            Ok(())
+        });
+
+        methods.add_method_mut("setopt_useragent", |_, this, value: String| {
+            match this.easy2.useragent(&value) {
+                Ok(it) => it,
+                Err(err) => return Err(Error::ExternalError(Arc::new(err))),
+            };
+            Ok(())
+        });
+
+        // setopt_writefunction
+        methods.add_method_mut("setopt_writefunction", |lua, this, value: Function| {
+            this.write_callback_key = Some(lua.create_registry_value(value)?);
+            Ok(())
+        });
+
+        // setopt_headerfunction
+        methods.add_method_mut("setopt_headerfunction", |lua, this, value: Function| {
+            this.heeader_callback_key = Some(lua.create_registry_value(value)?);
+            Ok(())
+        });
+
+        // perform
+        methods.add_method_mut("perform", |_, this, _: ()| {
+            match this.easy2.perform() {
+                Ok(it) => it,
+                Err(err) => return Err(Error::ExternalError(Arc::new(err))),
+            };
+            Ok(())
+        });
+
+        // getinfo
+        methods.add_method_mut("getinfo", |_, _, _: ()| {
+            println!("IMPLEMENT getinfo");
+            Ok(())
+        });
+
+        // close implemented in lua by dropping references and letting gc run
+
+        // escape
+        methods.add_method_mut("escape", |_, this, to_escape: String| {
+            Ok(this.easy2.url_encode(to_escape.as_bytes()))
+        });
+    }
+}
+
+fn new_curl_easy(lua: &Lua, _: ()) -> Result<AnyUserData> {
+    lua.create_userdata(EasyWrapper {
+        easy2: Easy2::new(Collector(Vec::new(), Vec::new())),
+        write_callback_key: None,
+        heeader_callback_key: None,
+    })
+}
+
 impl PathOfBuilding {
     pub fn start(self) -> Result<()> {
         let lua = Lua::new();
 
-        // Initialize global functions used by PoB
+        // Set load path
+        lua.load("package.path = package.path .. ';./lua/?.lua' .. ';./src/?.lua' .. ';./runtime/lua/?.lua'")
+            .exec()?;
+
+        // Initialize global functions and modules used by PoB
         let globals = lua.globals();
+
+        // Curl module hack, stolen from how nvim plugins work
+        let require = globals.get::<_, Function>("require")?;
+        let module = require.call::<_, Table>("lcurl.safe")?;
+        let setup = module.get::<_, Function>("setup")?;
+        let function_new_curl_easy = lua.create_function(new_curl_easy)?;
+        setup.call(function_new_curl_easy)?;
+
+        // let function_new_easy_curl = lua.create_function(new_easy_curl)?;
+        // globals.set("_curl_easy", function_new_easy_curl)?;
 
         let function_con_execute = lua.create_function(con_execute)?;
         globals.set("ConExecute", function_con_execute)?;
@@ -77,10 +192,6 @@ impl PathOfBuilding {
 
         let function_show_err_msg = lua.create_function(show_err_message)?;
         globals.set("ShowErrMsg", function_show_err_msg)?;
-
-        // add `some_directory` to the package path
-        lua.load("package.path = package.path .. ';./src/?.lua' .. ';./runtime/lua/?.lua'")
-            .exec()?;
 
         // require a module located in the newly added directory
         lua.load("require('Launch')").exec()?;
