@@ -620,7 +620,7 @@ Uber Pinnacle Boss adds the following modifiers:
 end
 
 -- Misc data tables
-LoadModule("Data/Misc", data)
+require("Data/Misc").setup(data)
 
 -- Stat descriptions
 data.describeStats = LoadModule("Modules/StatDescriber")
