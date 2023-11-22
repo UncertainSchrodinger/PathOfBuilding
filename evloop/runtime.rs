@@ -2,8 +2,8 @@ use std::{fs, path::Path, result, sync::Arc};
 
 use curl::easy::{Easy2, Handler, WriteError};
 use mlua::{
-    AnyUserData, Error, Function, Lua, RegistryKey, Result, Table, UserData, UserDataFields,
-    UserDataMethods, Value,
+    AnyUserData, Error, Function, Lua, MultiValue, RegistryKey, Result, Table, UserData,
+    UserDataFields, UserDataMethods, Value, Variadic,
 };
 
 pub struct PathOfBuilding {}
@@ -41,12 +41,11 @@ fn con_printf(_ctx: &Lua, message: String) -> Result<()> {
 }
 
 // pload_module is essiantially just a convoluted name for Lua loadfile
-fn pload_module(lua: &Lua, module: String) -> Result<Value> {
+fn pload_module<'a>(lua: &'a Lua, (module, args): (String, MultiValue<'a>)) -> Result<Value<'a>> {
     let path = Path::new("src").join(&module).with_extension("lua");
-    let path_str = path.to_str().unwrap_or("fixme later in runtime.rs");
-    // println!("pload module called {}", module);
-    // println!("loading file from {}", &path_str);
-    lua.load(path).call(())
+    // let path_str = path.to_str().unwrap_or("fixme later in runtime.rs");
+    println!("pload module called {} with args {:?}", module, args);
+    lua.load(path).call(args)
 }
 
 fn show_err_message(_ctx: &Lua, message: String) -> Result<()> {
