@@ -560,10 +560,9 @@ data.minionTagCrucibleUniques = {
 }
 
 -- Load bosses
-do 
-	data.bosses = { }
-	LoadModule("Data/Bosses", data.bosses)
-	
+do
+	data.bosses = require('Data/Bosses')
+
 	local count, uberCount = 0, 0
 	local armourTotal, evasionTotal = 0, 0
 	local uberArmourTotal, uberEvasionTotal = 0, 0
