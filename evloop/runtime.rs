@@ -151,7 +151,7 @@ impl PathOfBuilding {
         let lua = Lua::new();
 
         // Set load path
-        lua.load("package.path = package.path .. ';./lua/?.lua' .. ';./src/?.lua' .. ';./runtime/lua/?.lua'")
+        lua.load("package.path = package.path .. ';./lua/?.lua' .. ';./src/?.lua' .. ';./runtime/lua/?.lua' .. ';./runtime/lua/?/init.lua'")
             .exec()?;
 
         // Initialize global functions and modules used by PoB
