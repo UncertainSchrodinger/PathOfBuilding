@@ -83,6 +83,8 @@ function launch:OnInit()
 		-- Run a background update check if developer mode is off
 		self:CheckForUpdate(true)
 	end
+
+	print("Path of Building initialized")
 end
 
 function launch:CanExit()

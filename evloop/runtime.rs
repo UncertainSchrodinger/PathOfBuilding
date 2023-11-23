@@ -2,8 +2,8 @@ use std::{fs, path::Path, result, sync::Arc};
 
 use curl::easy::{Easy2, Handler, WriteError};
 use mlua::{
-    AnyUserData, Error, Function, Lua, MultiValue, RegistryKey, Result, Table, UserData,
-    UserDataFields, UserDataMethods, Value, Variadic,
+    AnyUserData, Error, Function, Lua, LuaOptions, MultiValue, RegistryKey, Result, StdLib, Table,
+    UserData, UserDataFields, UserDataMethods, Value, Variadic,
 };
 
 pub struct PathOfBuilding {}
@@ -41,7 +41,14 @@ fn con_printf(_ctx: &Lua, message: String) -> Result<()> {
 }
 
 // pload_module is essiantially just a convoluted name for Lua loadfile
-fn pload_module<'a>(lua: &'a Lua, (module, args): (String, MultiValue<'a>)) -> Result<Value<'a>> {
+fn pload_module<'a>(
+    lua: &'a Lua,
+    (module, args): (String, MultiValue<'a>),
+) -> Result<(Option<i32>, Value<'a>)> {
+    load_module(lua, (module, args)).map(|ret| (None, ret))
+}
+
+fn load_module<'a>(lua: &'a Lua, (module, args): (String, MultiValue<'a>)) -> Result<Value<'a>> {
     let path = Path::new("src").join(&module).with_extension("lua");
     // let path_str = path.to_str().unwrap_or("fixme later in runtime.rs");
     println!("pload module called {} with args {:?}", module, args);
@@ -51,6 +58,28 @@ fn pload_module<'a>(lua: &'a Lua, (module, args): (String, MultiValue<'a>)) -> R
 fn show_err_message(_ctx: &Lua, message: String) -> Result<()> {
     println!("ShowErrMsg called {}", message);
     Ok(())
+}
+
+// TODO: I think I got bamboozled by the compiler and the lifetimes are not required
+fn pcall<'a>(
+    _lua: &'a Lua,
+    (function, args): (Function<'a>, MultiValue<'a>),
+) -> Result<(Option<i32>, Value<'a>)> {
+    println!("PCall with arguments {:?}", args);
+    // TODO: Do we need to setup any debug stuff here or does mLua already do this?
+    function.call(args).map(|ret| (None, ret))
+}
+
+// TODO: implement fetching screen size
+// TODO: can this actually be negative resolution?
+fn get_screen_size(_ctx: &Lua, _: ()) -> Result<(i32, i32)> {
+    println!("GetScreenSize called");
+    Ok((1920, 1080))
+}
+
+// TODO: implement GetScriptPath
+fn get_script_path(_ctx: &Lua, _: ()) -> Result<String> {
+    Ok("./src".to_string())
 }
 
 struct Collector(Vec<u8>, Vec<u8>);
@@ -150,7 +179,8 @@ fn new_curl_easy(lua: &Lua, _: ()) -> Result<AnyUserData> {
 
 impl PathOfBuilding {
     pub fn start(self) -> Result<()> {
-        let lua = Lua::new();
+        // FIXME: Likely slowsdown usage due to debug
+        let lua = unsafe { Lua::unsafe_new_with(StdLib::ALL, LuaOptions::default()) };
 
         // Set load path
         lua.load("package.path = package.path .. ';./lua/?.lua' .. ';./src/?.lua' .. ';./runtime/lua/?.lua' .. ';./runtime/lua/?/init.lua'")
@@ -188,23 +218,41 @@ impl PathOfBuilding {
         globals.set("ConPrintf", function_con_printf)?;
 
         let function_pload_module = lua.create_function(pload_module)?;
-        let function_load_module = lua.create_function(pload_module)?;
+        let function_load_module = lua.create_function(load_module)?;
         globals.set("PLoadModule", function_pload_module)?;
         globals.set("LoadModule", function_load_module)?;
 
+        let function_pcall = lua.create_function(pcall)?;
+        globals.set("PCall", function_pcall)?;
+
         let function_show_err_msg = lua.create_function(show_err_message)?;
         globals.set("ShowErrMsg", function_show_err_msg)?;
+
+        let gunction_get_screen_size = lua.create_function(get_screen_size)?;
+        globals.set("GetScreenSize", gunction_get_screen_size)?;
+
+        let function_get_script_path = lua.create_function(get_script_path)?;
+        globals.set("GetScriptPath", function_get_script_path)?;
 
         // require a module located in the newly added directory
         lua.load("require('Launch')").exec()?;
 
         // We should now see launch in globals?
         let globals = lua.globals();
-        let launch = globals.get::<_, Table>("launch").unwrap();
 
-        println!("{:?}", launch.get::<_, Function>("OnInit"));
+        // TODO: Call consumes launch but why can't I use Arc here?
+        // TODO: Cache function lookups, this should be safe right? They don't move in memory?
+        // TODO: Make it userdata and hold a reference in registry so it won't get GC'd?
+        let launch = globals.get::<_, Table>("launch").unwrap();
+        println!("Initializing Path Of Building");
         let on_init: Function = launch.get::<_, Function>("OnInit")?;
         on_init.call::<_, ()>(launch)?;
+        println!("Succesfully initialized Path Of Building");
+
+        let launch = globals.get::<_, Table>("launch").unwrap();
+        println!("Generating frame");
+        let on_frame: Function = launch.get::<_, Function>("OnFrame")?;
+        on_frame.call::<_, ()>(launch)?;
 
         Ok(())
     }
