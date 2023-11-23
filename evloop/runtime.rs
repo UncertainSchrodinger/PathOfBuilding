@@ -60,6 +60,11 @@ fn show_err_message(_ctx: &Lua, message: String) -> Result<()> {
     Ok(())
 }
 
+fn mkdir(_ctx: &Lua, path: String) -> Result<()> {
+    println!("mkdir called {}", path);
+    Ok(())
+}
+
 // TODO: I think I got bamboozled by the compiler and the lifetimes are not required
 fn pcall<'a>(
     _lua: &'a Lua,
@@ -233,6 +238,9 @@ impl PathOfBuilding {
 
         let function_get_script_path = lua.create_function(get_script_path)?;
         globals.set("GetScriptPath", function_get_script_path)?;
+
+        let function_mkdir = lua.create_function(mkdir)?;
+        globals.set("MakeDir", function_mkdir)?;
 
         // require a module located in the newly added directory
         lua.load("require('Launch')").exec()?;
