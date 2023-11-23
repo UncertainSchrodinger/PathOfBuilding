@@ -95,7 +95,8 @@ function main:Init()
 	self.POESESSID = ""
 
 	local ignoreBuild
-	if arg[1] then
+	-- TODO(tatu): Propagate arguments from rust runtime to lua, now we just check if they're missing.
+	if arg and arg[1] then
 		buildSites.DownloadBuild(arg[1], nil, function(isSuccess, data)
 			if not isSuccess then
 				self:SetMode("BUILD", false, data)
