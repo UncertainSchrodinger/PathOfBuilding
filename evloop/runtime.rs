@@ -40,15 +40,19 @@ fn con_printf(_ctx: &Lua, message: String) -> Result<()> {
     Ok(())
 }
 
+// TODO: Not sure if pload_module actually returns multivalue, it was just simpler to implement
 // pload_module is essiantially just a convoluted name for Lua loadfile
 fn pload_module<'a>(
     lua: &'a Lua,
     (module, args): (String, MultiValue<'a>),
-) -> Result<(Option<i32>, Value<'a>)> {
+) -> Result<(Option<i32>, MultiValue<'a>)> {
     load_module(lua, (module, args)).map(|ret| (None, ret))
 }
 
-fn load_module<'a>(lua: &'a Lua, (module, args): (String, MultiValue<'a>)) -> Result<Value<'a>> {
+fn load_module<'a>(
+    lua: &'a Lua,
+    (module, args): (String, MultiValue<'a>),
+) -> Result<MultiValue<'a>> {
     let path = Path::new("src").join(&module).with_extension("lua");
     // let path_str = path.to_str().unwrap_or("fixme later in runtime.rs");
     println!("pload module called {} with args {:?}", module, args);
