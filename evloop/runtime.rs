@@ -65,6 +65,12 @@ fn mkdir(_ctx: &Lua, path: String) -> Result<()> {
     Ok(())
 }
 
+// TODO: Is this really a string? The heck.
+fn is_key_down(_ctx: &Lua, keycode: String) -> Result<bool> {
+    println!("IsKeyDown called {}", keycode);
+    Ok(false)
+}
+
 // TODO: I think I got bamboozled by the compiler and the lifetimes are not required
 fn pcall<'a>(
     _lua: &'a Lua,
@@ -241,6 +247,9 @@ impl PathOfBuilding {
 
         let function_mkdir = lua.create_function(mkdir)?;
         globals.set("MakeDir", function_mkdir)?;
+
+        let function_is_key_down = lua.create_function(is_key_down)?;
+        globals.set("IsKeyDown", function_is_key_down)?;
 
         // require a module located in the newly added directory
         lua.load("require('Launch')").exec()?;
