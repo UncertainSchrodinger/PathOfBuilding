@@ -1,9 +1,9 @@
-use std::{fs, path::Path, result, sync::Arc};
+use std::{path::Path, result, sync::Arc};
 
 use curl::easy::{Easy2, Handler, WriteError};
 use mlua::{
     AnyUserData, Error, Function, Lua, LuaOptions, MultiValue, RegistryKey, Result, StdLib, Table,
-    UserData, UserDataFields, UserDataMethods, Value, Variadic,
+    UserData, UserDataMethods, Value,
 };
 
 pub struct PathOfBuilding {}
@@ -124,6 +124,7 @@ impl UserData for EasyWrapper {
     fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
         // setopt_url
         methods.add_method_mut("setopt_url", |_, this, value: String| {
+            println!("fetching url {}", value);
             match this.easy2.url(&value) {
                 Ok(it) => it,
                 Err(err) => return Err(Error::ExternalError(Arc::new(err))),
@@ -140,7 +141,7 @@ impl UserData for EasyWrapper {
             Ok(())
         });
 
-        methods.add_method_mut("setopt_useragent", |_, this, value: String| {
+        methods.add_method_mut("setopt", |_, this, value: String| {
             match this.easy2.useragent(&value) {
                 Ok(it) => it,
                 Err(err) => return Err(Error::ExternalError(Arc::new(err))),
@@ -161,11 +162,26 @@ impl UserData for EasyWrapper {
         });
 
         // perform
-        methods.add_method_mut("perform", |_, this, _: ()| {
+        methods.add_method_mut("perform", |lua, this, _: ()| {
+            // match this.easy2.verbose(true) {
+            //     Ok(it) => it,
+            //     Err(err) => return Err(Error::ExternalError(Arc::new(err))),
+            // };
+
             match this.easy2.perform() {
                 Ok(it) => it,
                 Err(err) => return Err(Error::ExternalError(Arc::new(err))),
             };
+
+            if let Some(key) = &this.write_callback_key {
+                lua.registry_value::<Function>(&key).and_then(|callback| {
+                    let data = this.easy2.get_ref();
+                    let content = String::from_utf8_lossy(&data.0).to_string();
+                    callback.call(content)
+                })?;
+            }
+
+            // TODO: The fuck am I returning these Ok units all the time
             Ok(())
         });
 
@@ -176,6 +192,10 @@ impl UserData for EasyWrapper {
         });
 
         // close implemented in lua by dropping references and letting gc run
+        methods.add_method_mut("close", |_, _, _: ()| {
+            // Ok(this.easy2.url_encode(to_escape.as_bytes()))
+            Ok(())
+        });
 
         // escape
         methods.add_method_mut("escape", |_, this, to_escape: String| {
@@ -194,6 +214,8 @@ fn new_curl_easy(lua: &Lua, _: ()) -> Result<AnyUserData> {
 
 impl PathOfBuilding {
     pub fn start(self) -> Result<()> {
+        curl::init();
+
         // FIXME: Likely slowsdown usage due to debug
         let lua = unsafe { Lua::unsafe_new_with(StdLib::ALL, LuaOptions::default()) };
 

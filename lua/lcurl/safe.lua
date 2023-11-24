@@ -34,59 +34,11 @@ curl.OPT_PROXY = "OPT_PROXY"
 
 curl.setup = function(new_easy)
 	new_easy_proxy = new_easy
+	easy.new = new_easy_proxy
 end
 
 function curl:easy()
 	return easy:new()
-end
-
-function easy:new()
-	print("eaaasyyyy")
-	print(new_easy_proxy)
-	local o = {}
-	setmetatable(o, self)
-	self.__index = self
-	return o
-end
-
-function easy:setopt_url(url)
-	self.url = url
-end
-
-function easy:setopt_useragent(url)
-	self.url = url
-end
-
-function easy:setopt(opt, val)
-	print("should set option " .. opt .. " with value " .. val)
-end
-
-function easy:setopt_writefunction(writefunction)
-	self.writefunction = writefunction
-end
-
-function easy:setopt_headerfunction(headerfunction)
-	self.headerfunction = headerfunction
-end
-
-function easy:perform()
-	-- TODO(tatu): trigger call to Rust
-	print("should perform http call to url " .. self.url)
-end
-
-function easy:getinfo(key)
-	-- TODO(tatu): get call details
-	print("should get key " .. key)
-end
-
-function easy:close()
-	-- TODO(tatu): get call details
-	print("should close connection")
-end
-
-function easy:escape(part)
-	-- TODO(tatu): get call details
-	print("should escape " .. part)
 end
 
 return curl
