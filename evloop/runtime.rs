@@ -114,7 +114,7 @@ impl Handler for Collector {
 struct EasyWrapper {
     easy2: Easy2<Collector>,
     write_callback_key: Option<RegistryKey>,
-    heeader_callback_key: Option<RegistryKey>,
+    header_callback_key: Option<RegistryKey>,
 }
 
 // TODO: This does not work at all. I think I need to use a registry or something similar here?
@@ -156,7 +156,7 @@ impl UserData for EasyWrapper {
 
         // setopt_headerfunction
         methods.add_method_mut("setopt_headerfunction", |lua, this, value: Function| {
-            this.heeader_callback_key = Some(lua.create_registry_value(value)?);
+            this.header_callback_key = Some(lua.create_registry_value(value)?);
             Ok(())
         });
 
@@ -188,7 +188,7 @@ fn new_curl_easy(lua: &Lua, _: ()) -> Result<AnyUserData> {
     lua.create_userdata(EasyWrapper {
         easy2: Easy2::new(Collector(Vec::new(), Vec::new())),
         write_callback_key: None,
-        heeader_callback_key: None,
+        header_callback_key: None,
     })
 }
 
