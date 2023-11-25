@@ -1,4 +1,4 @@
-use std::{path::Path, result, sync::Arc};
+use std::{fs, path::Path, result, sync::Arc};
 
 use curl::easy::{Easy2, Handler, WriteError};
 use mlua::{
@@ -66,7 +66,7 @@ fn show_err_message(_ctx: &Lua, message: String) -> Result<()> {
 
 fn mkdir(_ctx: &Lua, path: String) -> Result<()> {
     println!("mkdir called {}", path);
-    Ok(())
+    Ok(fs::create_dir_all(path)?)
 }
 
 // TODO: Is this really a string? The heck.
