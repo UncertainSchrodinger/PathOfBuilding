@@ -69,9 +69,16 @@ fn show_err_message(_ctx: &Lua, message: String) -> Result<()> {
     Ok(())
 }
 
-fn mkdir(_ctx: &Lua, path: String) -> Result<()> {
-    println!("mkdir called {}", path);
-    Ok(fs::create_dir_all(path)?)
+// FIXME(tatu): Hardcoded to create everything under 'src' for git usage. I need to fix this later,
+// now I'm just focused on getting stuff to boot.
+//
+// In PoB installation all the files are in same level, this is completely different from the git
+// layout. I think this is why they have the compiled version of PoB together with the sources as
+// you cannot just run the one from git.
+fn mkdir(_ctx: &Lua, dir: String) -> Result<()> {
+    let full_path = Path::new("src").join(dir);
+    println!("mkdir called {:?}", full_path);
+    Ok(fs::create_dir_all(full_path)?)
 }
 
 // TODO: Is this really a string? The heck.
@@ -100,6 +107,53 @@ fn get_screen_size(_ctx: &Lua, _: ()) -> Result<(i32, i32)> {
 // TODO: implement GetScriptPath
 fn get_script_path(_ctx: &Lua, _: ()) -> Result<String> {
     Ok("./src".to_string())
+}
+
+// TODO: this should probably load into a texture or something?
+fn new_image_handle(lua: &Lua, _: ()) -> Result<AnyUserData> {
+    lua.create_userdata(ImageHandle {})
+}
+
+// TODO: This api seems bad, why do we have to query for a handle, then load the handle and
+// possibly have a shitty handle? Just pass a path to the handle and abort right away if it doesn't
+// work!
+struct ImageHandle {
+    // image: Option<Image<'a>>,
+}
+
+impl UserData for ImageHandle {
+    fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
+        // FIXME(tatu): Again just hacking around PWD being wrong for now
+        methods.add_method_mut("Load", |_, this, path: String| {
+            let full_path = Path::new("src").join(path);
+
+            // RetainedImage::from_image_bytes(&response.url, &response.bytes)
+            println!("loading image in path {:?}", &full_path);
+
+            // let image_bytes = fs::read(&full_path)?;
+            //
+            // println!(
+            //     "final uri {}",
+            //     format!("bytes://{}", full_path.to_string_lossy().into_owned())
+            // );
+            //
+            // this.image = Some(egui::Image::from_bytes(
+            //     format!("bytes://{}", full_path.to_string_lossy().into_owned()),
+            //     image_bytes,
+            // ));
+            //
+            // println!("{:?}", &this.image);
+
+            Ok(())
+        });
+
+        // TOOD: implement
+        methods.add_method_mut("ImageSize", |_, this, _: ()| {
+            // let image = this.image.as_ref().expect("Calling ImageSize but no image exists! Either image is missing or you forgot to call Load!"); let size = image.size().expect("Could not calculate image size???");
+
+            Ok((50, 50))
+        });
+    }
 }
 
 struct Collector(Vec<u8>, Vec<u8>);
@@ -281,6 +335,9 @@ impl PathOfBuilding {
 
         let function_is_key_down = lua.create_function(is_key_down)?;
         globals.set("IsKeyDown", function_is_key_down)?;
+
+        let function_new_image_handle = lua.create_function(new_image_handle)?;
+        globals.set("NewImageHandle", function_new_image_handle)?;
 
         // require a module located in the newly added directory
         lua.load("require('Launch')").exec()?;

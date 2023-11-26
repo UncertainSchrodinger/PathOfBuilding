@@ -58,14 +58,16 @@ local PassiveTreeClass = newClass("PassiveTree", function(self, treeVersion)
 
 	ConPrintf("Loading passive tree data for version '%s'...", treeVersions[treeVersion].display)
 	local treeText
-	local treeFile = io.open("TreeData/" .. treeVersion .. "/tree.lua", "r")
+	local treeFile = io.open("src/TreeData/" .. treeVersion .. "/tree.lua", "r")
+	print("trying to find tree version " .. treeVersion)
 	if treeFile then
+		print("version found")
 		treeText = treeFile:read("*a")
 		treeFile:close()
 	else
 		ConPrintf("Downloading passive tree data...")
 		local page
-		local pageFile = io.open("TreeData/" .. treeVersion .. "/data.json", "r")
+		local pageFile = io.open("src/TreeData/" .. treeVersion .. "/data.json", "r")
 		if pageFile then
 			page = pageFile:read("*a")
 			pageFile:close()
@@ -79,7 +81,7 @@ local PassiveTreeClass = newClass("PassiveTree", function(self, treeVersion)
 		else
 			treeText = "return " .. jsonToLua(page)
 		end
-		treeFile = io.open("TreeData/" .. treeVersion .. "/tree.lua", "w")
+		treeFile = io.open("src.TreeData/" .. treeVersion .. "/tree.lua", "w")
 		treeFile:write(treeText)
 		treeFile:close()
 	end
@@ -130,7 +132,7 @@ local PassiveTreeClass = newClass("PassiveTree", function(self, treeVersion)
 
 	if versionNum >= 3.19 then
 		local treeTextOLD
-		local treeFileOLD = io.open("TreeData/" .. "3_18" .. "/tree.lua", "r")
+		local treeFileOLD = io.open("src/TreeData/" .. "3_18" .. "/tree.lua", "r")
 		if treeFileOLD then
 			treeTextOLD = treeFileOLD:read("*a")
 			treeFileOLD:close()
@@ -644,11 +646,13 @@ end
 
 -- Checks if a given image is present and downloads it from the given URL if it isn't there
 function PassiveTreeClass:LoadImage(imgName, url, data, ...)
-	local imgFile = io.open("TreeData/" .. imgName, "r")
+	print("Loading image src/TreeData/" .. imgName)
+	local imgFile = io.open("src/TreeData/" .. imgName, "r")
 	if imgFile then
 		imgFile:close()
 	else
-		imgFile = io.open("TreeData/" .. self.treeVersion .. "/" .. imgName, "r")
+		print("Retrying with path src/TreeData/" .. self.treeVersion .. "/" .. imgName)
+		imgFile = io.open("src/TreeData/" .. self.treeVersion .. "/" .. imgName, "r")
 		if imgFile then
 			imgFile:close()
 			imgName = self.treeVersion .. "/" .. imgName
@@ -656,7 +660,7 @@ function PassiveTreeClass:LoadImage(imgName, url, data, ...)
 			ConPrintf("Downloading '%s'...", imgName)
 			local data = getFile(url)
 			if data and not data:match("<!DOCTYPE html>") then
-				imgFile = io.open("TreeData/" .. imgName, "wb")
+				imgFile = io.open("src/TreeData/" .. imgName, "wb")
 				imgFile:write(data)
 				imgFile:close()
 			else
@@ -667,6 +671,7 @@ function PassiveTreeClass:LoadImage(imgName, url, data, ...)
 	data.handle = NewImageHandle()
 	data.handle:Load("TreeData/" .. imgName, ...)
 	data.width, data.height = data.handle:ImageSize()
+	print("got width " .. data.width .. " and height " .. data.height)
 end
 
 -- Generate the quad used to render the line between the two given nodes
