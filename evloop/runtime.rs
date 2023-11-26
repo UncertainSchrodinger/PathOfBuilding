@@ -234,6 +234,15 @@ fn set_viewport(_lua: &Lua, (x, y, width, height): (i32, i32, i32, i32)) -> Resu
     Ok(())
 }
 
+// TODO: implement
+fn draw_string(
+    _lua: &Lua,
+    (x, y, _align, _height, _style, content): (i32, i32, String, i32, String, String),
+) -> Result<()> {
+    println!("DrawString called ({},{},{})", x, y, content);
+    Ok(())
+}
+
 // TODO: This api seems bad, why do we have to query for a handle, then load the handle and
 // possibly have a shitty handle? Just pass a path to the handle and abort right away if it doesn't
 // work!
@@ -479,6 +488,8 @@ impl PathOfBuilding {
 
         let function_set_viewport = lua.create_function(set_viewport)?;
         globals.set("SetViewport", function_set_viewport)?;
+
+        globals.set("DrawString", lua.create_function(draw_string)?)?;
 
         // require a module located in the newly added directory
         lua.load("require('Launch')").exec()?;
