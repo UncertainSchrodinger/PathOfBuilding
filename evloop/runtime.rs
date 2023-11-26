@@ -229,6 +229,11 @@ fn draw_image_quad(
     Ok(())
 }
 
+fn set_viewport(_lua: &Lua, (x, y, width, height): (i32, i32, i32, i32)) -> Result<()> {
+    println!("SetViewport called ({},{},{},{})", x, y, width, height);
+    Ok(())
+}
+
 // TODO: This api seems bad, why do we have to query for a handle, then load the handle and
 // possibly have a shitty handle? Just pass a path to the handle and abort right away if it doesn't
 // work!
@@ -471,6 +476,9 @@ impl PathOfBuilding {
 
         let function_draw_image_quad = lua.create_function(draw_image_quad)?;
         globals.set("DrawImageQuad", function_draw_image_quad)?;
+
+        let function_set_viewport = lua.create_function(set_viewport)?;
+        globals.set("SetViewport", function_set_viewport)?;
 
         // require a module located in the newly added directory
         lua.load("require('Launch')").exec()?;
