@@ -198,6 +198,37 @@ fn set_draw_layer(_lua: &Lua, (layer_id, sublayer_id): (Option<i32>, Option<i32>
     Ok(())
 }
 
+fn draw_image_quad(
+    lua: &Lua,
+    (
+        handle,
+        viewport_x,
+        viewport_y,
+        viewport_width,
+        viewport_height,
+        gigabrain_s1,
+        gigabrain_t1,
+        gigabrain_s2,
+        gigabrain_t2,
+    ): (
+        Value,
+        f32,
+        f32,
+        f32,
+        f32,
+        Option<f32>,
+        Option<f32>,
+        Option<f32>,
+        Option<f32>,
+    ),
+) -> Result<()> {
+    println!(
+        "DrawnImageQuad called ({:?},{},{})",
+        handle, viewport_x, viewport_y
+    );
+    Ok(())
+}
+
 // TODO: This api seems bad, why do we have to query for a handle, then load the handle and
 // possibly have a shitty handle? Just pass a path to the handle and abort right away if it doesn't
 // work!
@@ -437,6 +468,9 @@ impl PathOfBuilding {
 
         let function_set_draw_layer = lua.create_function(set_draw_layer)?;
         globals.set("SetDrawLayer", function_set_draw_layer)?;
+
+        let function_draw_image_quad = lua.create_function(draw_image_quad)?;
+        globals.set("DrawImageQuad", function_draw_image_quad)?;
 
         // require a module located in the newly added directory
         lua.load("require('Launch')").exec()?;
