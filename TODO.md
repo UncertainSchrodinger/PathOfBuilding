@@ -15,3 +15,9 @@
 * PassiveTree.lua stuff
     * Why does it try to load old trees always?
     * is it mandatory to have trees like 3.18 or just a bug
+* simplify path handling
+    * what I've done now is just hack shit until it works
+    * where to generate new lua scripts
+* maybe separate generation from runtime
+    * instead of loading trees on every boot generate them on demand
+    * maybe even have a CLI version of PoB, which can do the generation
