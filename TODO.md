@@ -21,3 +21,6 @@
 * maybe separate generation from runtime
     * instead of loading trees on every boot generate them on demand
     * maybe even have a CLI version of PoB, which can do the generation
+* fix mixed use of LoadModule/require/io.open
+    * Likely io.open is used to detect if the file exists
+        * for sure this is doable with just loadfile
