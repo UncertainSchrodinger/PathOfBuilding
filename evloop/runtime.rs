@@ -427,74 +427,29 @@ impl PathOfBuilding {
         let function_new_curl_easy = lua.create_function(new_curl_easy)?;
         setup.call(function_new_curl_easy)?;
 
-        // let function_new_easy_curl = lua.create_function(new_easy_curl)?;
-        // globals.set("_curl_easy", function_new_easy_curl)?;
-
-        let function_con_execute = lua.create_function(con_execute)?;
-        globals.set("ConExecute", function_con_execute)?;
-
-        let function_window_title = lua.create_function(set_window_title)?;
-        globals.set("SetWindowTitle", function_window_title)?;
-
-        let function_set_main_object = lua.create_function(set_main_object)?;
-        globals.set("SetMainObject", function_set_main_object)?;
-
-        let function_get_time = lua.create_function(get_time)?;
-        globals.set("GetTime", function_get_time)?;
-
-        let function_render_init = lua.create_function(render_init)?;
-        globals.set("RenderInit", function_render_init)?;
-
-        let function_con_printf = lua.create_function(con_printf)?;
-        globals.set("ConPrintf", function_con_printf)?;
-
-        let function_pload_module = lua.create_function(pload_module)?;
-        let function_load_module = lua.create_function(load_module)?;
-        globals.set("PLoadModule", function_pload_module)?;
-        globals.set("LoadModule", function_load_module)?;
-
-        let function_pcall = lua.create_function(pcall)?;
-        globals.set("PCall", function_pcall)?;
-
-        let function_show_err_msg = lua.create_function(show_err_message)?;
-        globals.set("ShowErrMsg", function_show_err_msg)?;
-
-        let gunction_get_screen_size = lua.create_function(get_screen_size)?;
-        globals.set("GetScreenSize", gunction_get_screen_size)?;
-
-        let function_get_script_path = lua.create_function(get_script_path)?;
-        globals.set("GetScriptPath", function_get_script_path)?;
-
-        let function_mkdir = lua.create_function(mkdir)?;
-        globals.set("MakeDir", function_mkdir)?;
-
-        let function_is_key_down = lua.create_function(is_key_down)?;
-        globals.set("IsKeyDown", function_is_key_down)?;
-
-        let function_new_image_handle = lua.create_function(new_image_handle)?;
-        globals.set("NewImageHandle", function_new_image_handle)?;
-
-        let function_draw_string_width = lua.create_function(draw_string_width)?;
-        globals.set("DrawStringWidth", function_draw_string_width)?;
-
-        let function_get_cursor_position = lua.create_function(get_cursor_position)?;
-        globals.set("GetCursorPos", function_get_cursor_position)?;
-
-        let function_set_draw_color = lua.create_function(set_draw_color)?;
-        globals.set("SetDrawColor", function_set_draw_color)?;
-
-        let function_draw_image = lua.create_function(draw_image)?;
-        globals.set("DrawImage", function_draw_image)?;
-
-        let function_set_draw_layer = lua.create_function(set_draw_layer)?;
-        globals.set("SetDrawLayer", function_set_draw_layer)?;
-
-        let function_draw_image_quad = lua.create_function(draw_image_quad)?;
-        globals.set("DrawImageQuad", function_draw_image_quad)?;
-
-        let function_set_viewport = lua.create_function(set_viewport)?;
-        globals.set("SetViewport", function_set_viewport)?;
-
+        // Setup some globals
+        globals.set("ConExecute", lua.create_function(con_execute)?)?;
+        globals.set("SetWindowTitle", lua.create_function(set_window_title)?)?;
+        globals.set("SetMainObject", lua.create_function(set_main_object)?)?;
+        globals.set("GetTime", lua.create_function(get_time)?)?;
+        globals.set("RenderInit", lua.create_function(render_init)?)?;
+        globals.set("ConPrintf", lua.create_function(con_printf)?)?;
+        globals.set("PLoadModule", lua.create_function(pload_module)?)?;
+        globals.set("LoadModule", lua.create_function(load_module)?)?;
+        globals.set("PCall", lua.create_function(pcall)?)?;
+        globals.set("ShowErrMsg", lua.create_function(show_err_message)?)?;
+        globals.set("GetScreenSize", lua.create_function(get_screen_size)?)?;
+        globals.set("GetScriptPath", lua.create_function(get_script_path)?)?;
+        globals.set("MakeDir", lua.create_function(mkdir)?)?;
+        globals.set("IsKeyDown", lua.create_function(is_key_down)?)?;
+        globals.set("NewImageHandle", lua.create_function(new_image_handle)?)?;
+        globals.set("DrawStringWidth", lua.create_function(draw_string_width)?)?;
+        globals.set("GetCursorPos", lua.create_function(get_cursor_position)?)?;
+        globals.set("SetDrawColor", lua.create_function(set_draw_color)?)?;
+        globals.set("DrawImage", lua.create_function(draw_image)?)?;
+        globals.set("SetDrawLayer", lua.create_function(set_draw_layer)?)?;
+        globals.set("DrawImageQuad", lua.create_function(draw_image_quad)?)?;
+        globals.set("SetViewport", lua.create_function(set_viewport)?)?;
         globals.set("DrawString", lua.create_function(draw_string)?)?;
 
         // require a module located in the newly added directory
