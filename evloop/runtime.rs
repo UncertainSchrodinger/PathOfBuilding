@@ -85,6 +85,12 @@ fn show_err_message(_ctx: &Lua, message: String) -> Result<()> {
     Ok(())
 }
 
+// TODO(tatu): Implement
+fn get_cursor_position(_ctx: &Lua, _: ()) -> Result<(i32, i32)> {
+    println!("GetCursorPos called");
+    Ok((0, 10))
+}
+
 // FIXME(tatu): Hardcoded to create everything under 'src' for git usage. I need to fix this later,
 // now I'm just focused on getting stuff to boot.
 //
@@ -367,6 +373,9 @@ impl PathOfBuilding {
 
         let function_draw_string_width = lua.create_function(draw_string_width)?;
         globals.set("DrawStringWidth", function_draw_string_width)?;
+
+        let function_get_cursor_position = lua.create_function(get_cursor_position)?;
+        globals.set("GetCursorPos", function_get_cursor_position)?;
 
         // require a module located in the newly added directory
         lua.load("require('Launch')").exec()?;
