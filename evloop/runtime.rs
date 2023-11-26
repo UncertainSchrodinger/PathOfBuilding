@@ -152,6 +152,33 @@ fn set_draw_color(lua: &Lua, (r, g, b): (i32, i32, i32)) -> Result<()> {
     Ok(())
 }
 
+// TODO: implement
+//
+// Last arguments seem like they're some scaling parameters based on x and y coordinates but in
+// code they're named like s1, t1, s2, t2 just to fuck you up. When actually implementing these
+// please fucking name them correctly, we ain't running out of disc space due to this and these two
+// letter variables ain't gonna win you the nobel price.
+fn draw_image(
+    lua: &Lua,
+    (
+        handle,
+        viewport_x,
+        viewport_y,
+        viewport_width,
+        viewport_height,
+        gigabrain_s1,
+        gigabrain_t1,
+        gigabrain_s2,
+        gigabrain_t2,
+    ): (Value, f32, f32, f32, f32, f32, f32, f32, f32),
+) -> Result<()> {
+    println!(
+        "DrawnImage called ({:?},{},{})",
+        handle, viewport_x, viewport_y
+    );
+    Ok(())
+}
+
 // TODO: This api seems bad, why do we have to query for a handle, then load the handle and
 // possibly have a shitty handle? Just pass a path to the handle and abort right away if it doesn't
 // work!
@@ -385,6 +412,9 @@ impl PathOfBuilding {
 
         let function_set_draw_color = lua.create_function(set_draw_color)?;
         globals.set("SetDrawColor", function_set_draw_color)?;
+
+        let function_draw_image = lua.create_function(draw_image)?;
+        globals.set("DrawImage", function_draw_image)?;
 
         // require a module located in the newly added directory
         lua.load("require('Launch')").exec()?;
