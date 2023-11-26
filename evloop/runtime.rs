@@ -130,6 +130,16 @@ fn new_image_handle(lua: &Lua, _: ()) -> Result<AnyUserData> {
     lua.create_userdata(ImageHandle {})
 }
 
+// TODO: implement
+// XXX: This method is just named funky, it doesn't actually draw the width of the string. It
+// fetches the width of the string from a glyph map AS IF IT WERE TO BE DRAWN.
+fn draw_string_width(
+    _lua: &Lua,
+    (_size, _font_style, _label): (i32, String, String),
+) -> Result<i32> {
+    Ok(50)
+}
+
 // TODO: This api seems bad, why do we have to query for a handle, then load the handle and
 // possibly have a shitty handle? Just pass a path to the handle and abort right away if it doesn't
 // work!
@@ -354,6 +364,9 @@ impl PathOfBuilding {
 
         let function_new_image_handle = lua.create_function(new_image_handle)?;
         globals.set("NewImageHandle", function_new_image_handle)?;
+
+        let function_draw_string_width = lua.create_function(draw_string_width)?;
+        globals.set("DrawStringWidth", function_draw_string_width)?;
 
         // require a module located in the newly added directory
         lua.load("require('Launch')").exec()?;
