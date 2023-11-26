@@ -170,7 +170,17 @@ fn draw_image(
         gigabrain_t1,
         gigabrain_s2,
         gigabrain_t2,
-    ): (Value, f32, f32, f32, f32, f32, f32, f32, f32),
+    ): (
+        Value,
+        f32,
+        f32,
+        f32,
+        f32,
+        Option<f32>,
+        Option<f32>,
+        Option<f32>,
+        Option<f32>,
+    ),
 ) -> Result<()> {
     println!(
         "DrawnImage called ({:?},{},{})",
