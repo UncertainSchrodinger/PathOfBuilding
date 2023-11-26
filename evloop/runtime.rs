@@ -49,13 +49,18 @@ fn pload_module<'a>(
     load_module(lua, (module, args)).map(|ret| (None, ret))
 }
 
+// Wrapper for loadfile that makes it work similar to require.
 fn load_module<'a>(
     lua: &'a Lua,
     (module, args): (String, MultiValue<'a>),
 ) -> Result<MultiValue<'a>> {
-    let path = Path::new("src").join(&module).with_extension("lua");
-    // let path_str = path.to_str().unwrap_or("fixme later in runtime.rs");
-    println!("pload module called {} with args {:?}", module, args);
+    let mut path = Path::new("src").join(&module);
+
+    if path.extension().is_none() {
+        path = path.with_extension("lua");
+    }
+
+    println!("pload module called {:?} with args {:?}", path, args);
     lua.load(path).call(args)
 }
 
