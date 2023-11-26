@@ -146,6 +146,12 @@ fn draw_string_width(
     Ok(50)
 }
 
+// TODO: implement
+fn set_draw_color(lua: &Lua, (r, g, b): (i32, i32, i32)) -> Result<()> {
+    println!("Set draw color to RGB ({},{},{})", r, g, b);
+    Ok(())
+}
+
 // TODO: This api seems bad, why do we have to query for a handle, then load the handle and
 // possibly have a shitty handle? Just pass a path to the handle and abort right away if it doesn't
 // work!
@@ -376,6 +382,9 @@ impl PathOfBuilding {
 
         let function_get_cursor_position = lua.create_function(get_cursor_position)?;
         globals.set("GetCursorPos", function_get_cursor_position)?;
+
+        let function_set_draw_color = lua.create_function(set_draw_color)?;
+        globals.set("SetDrawColor", function_set_draw_color)?;
 
         // require a module located in the newly added directory
         lua.load("require('Launch')").exec()?;
