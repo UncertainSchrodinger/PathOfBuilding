@@ -147,8 +147,8 @@ fn draw_string_width(
 }
 
 // TODO: implement
-fn set_draw_color(lua: &Lua, (r, g, b): (i32, i32, i32)) -> Result<()> {
-    println!("Set draw color to RGB ({},{},{})", r, g, b);
+fn set_draw_color(_lua: &Lua, (args): (MultiValue)) -> Result<()> {
+    println!("Set draw color to {:?}", args);
     Ok(())
 }
 
@@ -229,8 +229,14 @@ fn draw_image_quad(
     Ok(())
 }
 
-fn set_viewport(_lua: &Lua, (x, y, width, height): (i32, i32, i32, i32)) -> Result<()> {
-    println!("SetViewport called ({},{},{},{})", x, y, width, height);
+fn set_viewport(
+    _lua: &Lua,
+    (x, y, width, height): (Option<i32>, Option<i32>, Option<i32>, Option<i32>),
+) -> Result<()> {
+    println!(
+        "SetViewport called ({:?},{:?},{:?},{:?})",
+        x, y, width, height
+    );
     Ok(())
 }
 
