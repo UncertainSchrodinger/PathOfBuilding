@@ -39,7 +39,7 @@ local function getFile(URL)
 	local easy = common.curl.easy()
 	easy:setopt_url(URL)
 	easy:setopt_writefunction(function(data)
-		page = page..data
+		page = page .. data
 		return true
 	end)
 	easy:perform()
@@ -58,14 +58,14 @@ local PassiveTreeClass = newClass("PassiveTree", function(self, treeVersion)
 
 	ConPrintf("Loading passive tree data for version '%s'...", treeVersions[treeVersion].display)
 	local treeText
-	local treeFile = io.open("TreeData/"..treeVersion.."/tree.lua", "r")
+	local treeFile = io.open("TreeData/" .. treeVersion .. "/tree.lua", "r")
 	if treeFile then
 		treeText = treeFile:read("*a")
 		treeFile:close()
 	else
 		ConPrintf("Downloading passive tree data...")
 		local page
-		local pageFile = io.open("TreeData/"..treeVersion.."/data.json", "r")
+		local pageFile = io.open("TreeData/" .. treeVersion .. "/data.json", "r")
 		if pageFile then
 			page = pageFile:read("*a")
 			pageFile:close()
@@ -79,7 +79,7 @@ local PassiveTreeClass = newClass("PassiveTree", function(self, treeVersion)
 		else
 			treeText = "return " .. jsonToLua(page)
 		end
-		treeFile = io.open("TreeData/"..treeVersion.."/tree.lua", "w")
+		treeFile = io.open("TreeData/" .. treeVersion .. "/tree.lua", "w")
 		treeFile:write(treeText)
 		treeFile:close()
 	end
@@ -100,9 +100,9 @@ local PassiveTreeClass = newClass("PassiveTree", function(self, treeVersion)
 	end
 
 	-- Build maps of class name -> class table
-	self.classNameMap = { }
-	self.ascendNameMap = { }
-	self.classNotables = { }
+	self.classNameMap = {}
+	self.ascendNameMap = {}
+	self.classNotables = {}
 
 	for classId, class in pairs(self.classes) do
 		if versionNum >= 3.10 then
@@ -130,7 +130,7 @@ local PassiveTreeClass = newClass("PassiveTree", function(self, treeVersion)
 
 	if versionNum >= 3.19 then
 		local treeTextOLD
-		local treeFileOLD = io.open("TreeData/".. "3_18" .."/tree.lua", "r")
+		local treeFileOLD = io.open("TreeData/" .. "3_18" .. "/tree.lua", "r")
 		if treeFileOLD then
 			treeTextOLD = treeFileOLD:read("*a")
 			treeFileOLD:close()
@@ -144,12 +144,12 @@ local PassiveTreeClass = newClass("PassiveTree", function(self, treeVersion)
 	end
 	ConPrintf("Loading passive tree assets...")
 	for name, data in pairs(self.assets) do
-		self:LoadImage(name..".png", cdnRoot..(data[0.3835] or data[1]), data, not name:match("[OL][ri][bn][ie][tC]") and "ASYNC" or nil)--, not name:match("[OL][ri][bn][ie][tC]") and "MIPMAP" or nil)
+		self:LoadImage(name .. ".png", cdnRoot .. (data[0.3835] or data[1]), data, not name:match("[OL][ri][bn][ie][tC]") and "ASYNC" or nil) --, not name:match("[OL][ri][bn][ie][tC]") and "MIPMAP" or nil)
 	end
 
 	-- Load sprite sheets and build sprite map
-	self.spriteMap = { }
-	local spriteSheets = { }
+	self.spriteMap = {}
+	local spriteSheets = {}
 	for type, data in pairs(self.skillSprites) do
 		local maxZoom = data[#data]
 		if versionNum >= 3.19 then
@@ -157,13 +157,13 @@ local PassiveTreeClass = newClass("PassiveTree", function(self, treeVersion)
 		end
 		local sheet = spriteSheets[maxZoom.filename]
 		if not sheet then
-			sheet = { }
-			self:LoadImage(versionNum >= 3.16 and maxZoom.filename:gsub("%?%x+$",""):gsub(".*/","") or maxZoom.filename:gsub("%?%x+$",""), versionNum >= 3.16 and maxZoom.filename or "https://web.poecdn.com"..(self.imageRoot or "/image/")..(versionNum >= 3.08 and "passive-skill/" or "build-gen/passive-skill-sprite/")..maxZoom.filename, sheet, "CLAMP")--, "MIPMAP")
+			sheet = {}
+			self:LoadImage(versionNum >= 3.16 and maxZoom.filename:gsub("%?%x+$", ""):gsub(".*/", "") or maxZoom.filename:gsub("%?%x+$", ""), versionNum >= 3.16 and maxZoom.filename or "https://web.poecdn.com" .. (self.imageRoot or "/image/") .. (versionNum >= 3.08 and "passive-skill/" or "build-gen/passive-skill-sprite/") .. maxZoom.filename, sheet, "CLAMP") --, "MIPMAP")
 			spriteSheets[maxZoom.filename] = sheet
 		end
 		for name, coords in pairs(maxZoom.coords) do
 			if not self.spriteMap[name] then
-				self.spriteMap[name] = { }
+				self.spriteMap[name] = {}
 			end
 			self.spriteMap[name][type] = {
 				handle = sheet.handle,
@@ -183,15 +183,15 @@ local PassiveTreeClass = newClass("PassiveTree", function(self, treeVersion)
 		local maxZoom = data[#data]
 		local sheet = spriteSheets[maxZoom.filename]
 		if not sheet then
-			sheet = { }
+			sheet = {}
 			sheet.handle = NewImageHandle()
-			sheet.handle:Load("TreeData/legion/"..maxZoom.filename)
+			sheet.handle:Load("TreeData/legion/" .. maxZoom.filename)
 			sheet.width, sheet.height = sheet.handle:ImageSize()
 			spriteSheets[maxZoom.filename] = sheet
 		end
 		for name, coords in pairs(maxZoom.coords) do
 			if not self.spriteMap[name] then
-				self.spriteMap[name] = { }
+				self.spriteMap[name] = {}
 			end
 			self.spriteMap[name][type] = {
 				handle = sheet.handle,
@@ -268,7 +268,7 @@ local PassiveTreeClass = newClass("PassiveTree", function(self, treeVersion)
 		-- Migrate groups to old format
 		for _, group in pairs(self.groups) do
 			group.n = group.nodes
-			group.oo = { }
+			group.oo = {}
 			for _, orbit in ipairs(group.orbits) do
 				group.oo[orbit] = true
 			end
@@ -279,13 +279,13 @@ local PassiveTreeClass = newClass("PassiveTree", function(self, treeVersion)
 	end
 
 	ConPrintf("Processing tree...")
-	self.ascendancyMap = { }
-	self.keystoneMap = { }
-	self.notableMap = { }
-	self.clusterNodeMap = { }
-	self.sockets = { }
-	self.masteryEffects = { }
-	local nodeMap = { }
+	self.ascendancyMap = {}
+	self.keystoneMap = {}
+	self.notableMap = {}
+	self.clusterNodeMap = {}
+	self.sockets = {}
+	self.masteryEffects = {}
+	local nodeMap = {}
 	for _, node in pairs(self.nodes) do
 		-- Migration...
 		if versionNum < 3.10 then
@@ -303,11 +303,11 @@ local PassiveTreeClass = newClass("PassiveTree", function(self, treeVersion)
 		end
 
 		if versionNum <= 3.09 and node.passivePointsGranted > 0 then
-			t_insert(node.sd, "Grants "..node.passivePointsGranted.." Passive Skill Point"..(node.passivePointsGranted > 1 and "s" or ""))
+			t_insert(node.sd, "Grants " .. node.passivePointsGranted .. " Passive Skill Point" .. (node.passivePointsGranted > 1 and "s" or ""))
 		end
 		node.__index = node
-		node.linkedId = { }
-		nodeMap[node.id] = node	
+		node.linkedId = {}
+		nodeMap[node.id] = node
 
 		-- Determine node type
 		if node.classStartIndex then
@@ -353,7 +353,7 @@ local PassiveTreeClass = newClass("PassiveTree", function(self, treeVersion)
 			else
 				self.ascendancyMap[node.dn:lower()] = node
 				if not self.classNotables[self.ascendNameMap[node.ascendancyName].class.name] then
-					self.classNotables[self.ascendNameMap[node.ascendancyName].class.name] = { }
+					self.classNotables[self.ascendNameMap[node.ascendancyName].class.name] = {}
 				end
 				if self.ascendNameMap[node.ascendancyName].class.name ~= "Scion" then
 					t_insert(self.classNotables[self.ascendNameMap[node.ascendancyName].class.name], node.dn)
@@ -365,7 +365,7 @@ local PassiveTreeClass = newClass("PassiveTree", function(self, treeVersion)
 				not node.dn:find("Strength") and not node.dn:find("Passive") then
 				self.ascendancyMap[node.dn:lower()] = node
 				if not self.classNotables[self.ascendNameMap[node.ascendancyName].class.name] then
-					self.classNotables[self.ascendNameMap[node.ascendancyName].class.name] = { }
+					self.classNotables[self.ascendNameMap[node.ascendancyName].class.name] = {}
 				end
 				t_insert(self.classNotables[self.ascendNameMap[node.ascendancyName].class.name], node.dn)
 			end
@@ -382,12 +382,12 @@ local PassiveTreeClass = newClass("PassiveTree", function(self, treeVersion)
 		elseif node.type == "Notable" or node.type == "Keystone" then
 			self.clusterNodeMap[node.dn] = node
 		end
-		
+
 		self:ProcessNode(node)
 	end
 
 	-- Pregenerate the polygons for the node connector lines
-	self.connectors = { }
+	self.connectors = {}
 	for _, node in pairs(self.nodes) do
 		for _, otherId in pairs(node.out or {}) do
 			if type(otherId) == "string" then
@@ -400,11 +400,11 @@ local PassiveTreeClass = newClass("PassiveTree", function(self, treeVersion)
 				and node.ascendancyName == other.ascendancyName
 				and not node.isProxy and not other.isProxy
 				and not node.group.isProxy and not node.group.isProxy then
-					local connectors = self:BuildConnector(node, other)
-					t_insert(self.connectors, connectors[1])
-					if connectors[2] then
-						t_insert(self.connectors, connectors[2])
-					end
+				local connectors = self:BuildConnector(node, other)
+				t_insert(self.connectors, connectors[1])
+				if connectors[2] then
+					t_insert(self.connectors, connectors[2])
+				end
 			end
 		end
 		for _, otherId in pairs(node["in"] or {}) do
@@ -417,11 +417,11 @@ local PassiveTreeClass = newClass("PassiveTree", function(self, treeVersion)
 
 	-- Precalculate the lists of nodes that are within each radius of each socket
 	for nodeId, socket in pairs(self.sockets) do
-		socket.nodesInRadius = { }
-		socket.attributesInRadius = { }
+		socket.nodesInRadius = {}
+		socket.attributesInRadius = {}
 		for radiusIndex, _ in ipairs(data.jewelRadius) do
-			socket.nodesInRadius[radiusIndex] = { }
-			socket.attributesInRadius[radiusIndex] = { }
+			socket.nodesInRadius[radiusIndex] = {}
+			socket.attributesInRadius[radiusIndex] = {}
 		end
 
 		local minX, maxX = socket.x - data.maxJewelRadius, socket.x + data.maxJewelRadius
@@ -431,22 +431,22 @@ local PassiveTreeClass = newClass("PassiveTree", function(self, treeVersion)
 			if node.x and node.x >= minX and node.x <= maxX and node.y and node.y >= minY and node.y <= maxY
 				and node ~= socket and not node.isBlighted and node.group and not node.isProxy
 				and not node.group.isProxy and not node.isMastery then
-					local vX, vY = node.x - socket.x, node.y - socket.y
-					local distSquared = vX * vX + vY * vY
-					for radiusIndex, radiusInfo in ipairs(data.jewelRadius) do
-						if distSquared <= radiusInfo.outerSquared and radiusInfo.innerSquared <= distSquared then
-							socket.nodesInRadius[radiusIndex][node.id] = node
-						end
+				local vX, vY = node.x - socket.x, node.y - socket.y
+				local distSquared = vX * vX + vY * vY
+				for radiusIndex, radiusInfo in ipairs(data.jewelRadius) do
+					if distSquared <= radiusInfo.outerSquared and radiusInfo.innerSquared <= distSquared then
+						socket.nodesInRadius[radiusIndex][node.id] = node
 					end
+				end
 			end
 		end
 	end
 
 	for name, keystone in pairs(self.keystoneMap) do
 		if not keystone.nodesInRadius then
-			keystone.nodesInRadius = { }
+			keystone.nodesInRadius = {}
 			for radiusIndex, _ in ipairs(data.jewelRadius) do
-				keystone.nodesInRadius[radiusIndex] = { }
+				keystone.nodesInRadius[radiusIndex] = {}
 			end
 
 			if (keystone.x and keystone.y) then
@@ -457,13 +457,13 @@ local PassiveTreeClass = newClass("PassiveTree", function(self, treeVersion)
 					if node.x and node.x >= minX and node.x <= maxX and node.y and node.y >= minY and node.y <= maxY
 						and node ~= keystone and not node.isBlighted and node.group and not node.isProxy
 						and not node.group.isProxy and not node.isMastery and not node.isSocket then
-							local vX, vY = node.x - keystone.x, node.y - keystone.y
-							local distSquared = vX * vX + vY * vY
-							for radiusIndex, radiusInfo in ipairs(data.jewelRadius) do
-								if distSquared <= radiusInfo.outerSquared and radiusInfo.innerSquared <= distSquared then
-									keystone.nodesInRadius[radiusIndex][node.id] = node
-								end
+						local vX, vY = node.x - keystone.x, node.y - keystone.y
+						local distSquared = vX * vX + vY * vY
+						for radiusIndex, radiusInfo in ipairs(data.jewelRadius) do
+							if distSquared <= radiusInfo.outerSquared and radiusInfo.innerSquared <= distSquared then
+								keystone.nodesInRadius[radiusIndex][node.id] = node
 							end
+						end
 					end
 				end
 			end
@@ -475,7 +475,7 @@ local PassiveTreeClass = newClass("PassiveTree", function(self, treeVersion)
 		for _, nodeId in ipairs(startNode.linkedId) do
 			local node = nodeMap[nodeId]
 			if node.type == "Normal" then
-				node.modList:NewMod("Condition:ConnectedTo"..class.name.."Start", "FLAG", true, "Tree:"..nodeId)
+				node.modList:NewMod("Condition:ConnectedTo" .. class.name .. "Start", "FLAG", true, "Tree:" .. nodeId)
 			end
 		end
 	end
@@ -500,7 +500,7 @@ local PassiveTreeClass = newClass("PassiveTree", function(self, treeVersion)
 		node.sprites = self.spriteMap[node.icon]
 		if not node.sprites then
 			--error("missing sprite "..node.icon)
-			node.sprites = { }
+			node.sprites = {}
 		end
 
 		self:ProcessStats(node)
@@ -524,7 +524,7 @@ local PassiveTreeClass = newClass("PassiveTree", function(self, treeVersion)
 		node.effectSprites = self.spriteMap[node.activeEffectImage]
 		if not node.sprites then
 			--error("missing sprite "..node.icon)
-			node.sprites = { }
+			node.sprites = {}
 		end
 
 		self:ProcessStats(node)
@@ -538,7 +538,7 @@ function PassiveTreeClass:ProcessStats(node, startIndex)
 	startIndex = startIndex or 1
 	if startIndex == 1 then
 		node.modKey = ""
-		node.mods = { }
+		node.mods = {}
 		node.modList = new("ModList")
 	end
 
@@ -572,7 +572,7 @@ function PassiveTreeClass:ProcessStats(node, startIndex)
 				if list and not extra then
 					-- Success, add dummy mod lists to the other lines that were combined with this one
 					for ci = i + 1, endI do
-						node.mods[ci] = { list = { } }
+						node.mods[ci] = { list = {} }
 					end
 					break
 				end
@@ -587,7 +587,7 @@ function PassiveTreeClass:ProcessStats(node, startIndex)
 			node.extra = true
 		else
 			for _, mod in ipairs(list) do
-				node.modKey = node.modKey.."["..modLib.formatMod(mod).."]"
+				node.modKey = node.modKey .. "[" .. modLib.formatMod(mod) .. "]"
 			end
 		end
 		node.mods[i] = { list = list, extra = extra }
@@ -603,13 +603,13 @@ function PassiveTreeClass:ProcessStats(node, startIndex)
 		local mod = node.mods[i]
 		if mod.list and not mod.extra then
 			for i, mod in ipairs(mod.list) do
-				mod = modLib.setSource(mod, "Tree:"..node.id)
+				mod = modLib.setSource(mod, "Tree:" .. node.id)
 				node.modList:AddMod(mod)
 			end
 		end
 	end
 	if node.type == "Keystone" then
-		node.keystoneMod = modLib.createMod("Keystone", "LIST", node.dn, "Tree"..node.id)
+		node.keystoneMod = modLib.createMod("Keystone", "LIST", node.dn, "Tree" .. node.id)
 	end
 end
 
@@ -644,19 +644,19 @@ end
 
 -- Checks if a given image is present and downloads it from the given URL if it isn't there
 function PassiveTreeClass:LoadImage(imgName, url, data, ...)
-	local imgFile = io.open("TreeData/"..imgName, "r")
+	local imgFile = io.open("TreeData/" .. imgName, "r")
 	if imgFile then
 		imgFile:close()
 	else
-		imgFile = io.open("TreeData/"..self.treeVersion.."/"..imgName, "r")
+		imgFile = io.open("TreeData/" .. self.treeVersion .. "/" .. imgName, "r")
 		if imgFile then
 			imgFile:close()
-			imgName = self.treeVersion.."/"..imgName
+			imgName = self.treeVersion .. "/" .. imgName
 		elseif main.allowTreeDownload then -- Enable downloading with Ctrl+Shift+F5
 			ConPrintf("Downloading '%s'...", imgName)
 			local data = getFile(url)
 			if data and not data:match("<!DOCTYPE html>") then
-				imgFile = io.open("TreeData/"..imgName, "wb")
+				imgFile = io.open("TreeData/" .. imgName, "wb")
 				imgFile:write(data)
 				imgFile:close()
 			else
@@ -665,7 +665,7 @@ function PassiveTreeClass:LoadImage(imgName, url, data, ...)
 		end
 	end
 	data.handle = NewImageHandle()
-	data.handle:Load("TreeData/"..imgName, ...)
+	data.handle:Load("TreeData/" .. imgName, ...)
 	data.width, data.height = data.handle:ImageSize()
 end
 
@@ -675,9 +675,9 @@ function PassiveTreeClass:BuildConnector(node1, node2)
 		ascendancyName = node1.ascendancyName,
 		nodeId1 = node1.id,
 		nodeId2 = node2.id,
-		c = { } -- This array will contain the quad's data: 1-8 are the vertex coordinates, 9-16 are the texture coordinates
-				-- Only the texture coords are filled in at this time; the vertex coords need to be converted from tree-space to screen-space first
-				-- This will occur when the tree is being drawn; .vert will map line state (Normal/Intermediate/Active) to the correct tree-space coordinates 
+		c = {} -- This array will contain the quad's data: 1-8 are the vertex coordinates, 9-16 are the texture coordinates
+		-- Only the texture coords are filled in at this time; the vertex coords need to be converted from tree-space to screen-space first
+		-- This will occur when the tree is being drawn; .vert will map line state (Normal/Intermediate/Active) to the correct tree-space coordinates
 	}
 	if node1.g == node2.g and node1.o == node2.o then
 		-- Nodes are in the same orbit of the same group
@@ -748,24 +748,24 @@ function PassiveTreeClass:BuildArc(arcAngle, node1, connector, isMirroredArc)
 		-- The center of the mirrored angle should be positioned at 75% of the way between nodes.
 		angle = angle + arcAngle
 	end
-	connector.vert = { }
+	connector.vert = {}
 	for _, state in pairs({ "Normal", "Intermediate", "Active" }) do
 		-- The different line states have differently-sized artwork, so the vertex coords must be calculated separately for each one
 		local art = self.assets[connector.type .. state]
 		local size = art.width * 2 * 1.33
 		local oX, oY = size * m_sqrt(2) * m_sin(angle + m_pi / 4), size * m_sqrt(2) * -m_cos(angle + m_pi / 4)
 		local cX, cY = node1.group.x + oX, node1.group.y + oY
-		local vert = { }
+		local vert = {}
 		vert[1], vert[2] = node1.group.x, node1.group.y
 		vert[3], vert[4] = cX + (size * m_sin(angle) - oX) * p, cY + (size * -m_cos(angle) - oY) * p
 		vert[5], vert[6] = cX, cY
 		vert[7], vert[8] = cX + (size * m_cos(angle) - oX) * p, cY + (size * m_sin(angle) - oY) * p
 		if (isMirroredArc) then
-		-- Flip the quad's non-origin, non-center vertexes when drawing a mirrored arc so that the arc actually mirrored
-		-- This is required to prevent the connection of the 2 arcs appear to have a 'seam'
-			local temp1, temp2 = vert[3],vert[4]
-			vert[3],vert[4] = vert[7],vert[8]
-			vert[7],vert[8] = temp1, temp2
+			-- Flip the quad's non-origin, non-center vertexes when drawing a mirrored arc so that the arc actually mirrored
+			-- This is required to prevent the connection of the 2 arcs appear to have a 'seam'
+			local temp1, temp2 = vert[3], vert[4]
+			vert[3], vert[4] = vert[7], vert[8]
+			vert[7], vert[8] = temp1, temp2
 		end
 		connector.vert[state] = vert
 	end
