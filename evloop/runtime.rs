@@ -189,6 +189,15 @@ fn draw_image(
     Ok(())
 }
 
+// TODO: implement
+//
+// So in lua side this can be called with nil on either value but if the first argument is nil then
+// the second one must not be.
+fn set_draw_layer(_lua: &Lua, (layer_id, sublayer_id): (Option<i32>, Option<i32>)) -> Result<()> {
+    println!("SetDrawLayer called ({:?},{:?})", layer_id, sublayer_id);
+    Ok(())
+}
+
 // TODO: This api seems bad, why do we have to query for a handle, then load the handle and
 // possibly have a shitty handle? Just pass a path to the handle and abort right away if it doesn't
 // work!
@@ -425,6 +434,9 @@ impl PathOfBuilding {
 
         let function_draw_image = lua.create_function(draw_image)?;
         globals.set("DrawImage", function_draw_image)?;
+
+        let function_set_draw_layer = lua.create_function(set_draw_layer)?;
+        globals.set("SetDrawLayer", function_set_draw_layer)?;
 
         // require a module located in the newly added directory
         lua.load("require('Launch')").exec()?;
