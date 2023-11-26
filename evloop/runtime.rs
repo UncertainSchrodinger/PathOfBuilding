@@ -1,10 +1,18 @@
 use std::{fs, path::Path, result, sync::Arc};
 
+use chrono::prelude::*;
 use curl::easy::{Easy2, Handler, WriteError};
+use lazy_static::lazy_static;
 use mlua::{
     AnyUserData, Error, Function, Lua, LuaOptions, MultiValue, RegistryKey, Result, StdLib, Table,
     UserData, UserDataMethods, Value,
 };
+
+// FIXME(tatu): Runtime should actually save these globals but this whole crap will get refactored
+// out eventually.
+lazy_static! {
+    static ref START: DateTime<Local> = Local::now();
+}
 
 pub struct PathOfBuilding {}
 
@@ -20,9 +28,17 @@ fn set_window_title(_ctx: &Lua, title: String) -> Result<()> {
     Ok(())
 }
 
-fn get_time(_ctx: &Lua, _: ()) -> Result<()> {
-    println!("Get Time called");
-    Ok(())
+// TODO: Rename this to something like GetMillisecondsSinceStart.
+//
+// Sooooo... GetTime in SimpleGraphics is confusing as fuck. GetTime you'd expect to get something that
+// represents time, as in the fucking hours, minutes, seconds and so on. But what it actually does is
+// that during app startup the current time is saved, then GetTime fetches that date, subtracts it
+// from current time and then finally converts the duration to millisecond duration!
+fn get_time(_ctx: &Lua, _: ()) -> Result<i64> {
+    println!("Get Time called {:?}", *START);
+
+    let duration_since_start = Local::now() - *START;
+    Ok(duration_since_start.num_milliseconds())
 }
 
 fn set_main_object(_ctx: &Lua, table: Table) -> Result<()> {
