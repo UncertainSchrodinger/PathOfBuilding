@@ -540,8 +540,6 @@ impl PathOfBuilding {
                 }
             }
         });
-
-        Ok(())
     }
 }
 
