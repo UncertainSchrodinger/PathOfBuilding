@@ -47,6 +47,12 @@ impl UserData for PathOfBuildingApi {
             println!("{}", title);
             Ok(())
         });
+
+        methods.add_method_mut("get_screen_size", |_, this, _: ()| {
+            println!("GetScreenSize called");
+            let inner_size = this.window.window().inner_size();
+            Ok((inner_size.width, inner_size.height))
+        });
     }
 }
 
@@ -297,7 +303,7 @@ impl UserData for ImageHandle {
             let full_path = Path::new("src").join(path);
 
             // RetainedImage::from_image_bytes(&response.url, &response.bytes)
-            println!("loading image in path {:?}", &full_path);
+            // println!("loading image in path {:?}", &full_path);
 
             // let image_bytes = fs::read(&full_path)?;
             //

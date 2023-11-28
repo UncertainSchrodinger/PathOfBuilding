@@ -646,12 +646,10 @@ end
 
 -- Checks if a given image is present and downloads it from the given URL if it isn't there
 function PassiveTreeClass:LoadImage(imgName, url, data, ...)
-	print("Loading image src/TreeData/" .. imgName)
 	local imgFile = io.open("src/TreeData/" .. imgName, "r")
 	if imgFile then
 		imgFile:close()
 	else
-		print("Retrying with path src/TreeData/" .. self.treeVersion .. "/" .. imgName)
 		imgFile = io.open("src/TreeData/" .. self.treeVersion .. "/" .. imgName, "r")
 		if imgFile then
 			imgFile:close()
@@ -671,7 +669,6 @@ function PassiveTreeClass:LoadImage(imgName, url, data, ...)
 	data.handle = NewImageHandle()
 	data.handle:Load("TreeData/" .. imgName, ...)
 	data.width, data.height = data.handle:ImageSize()
-	print("got width " .. data.width .. " and height " .. data.height)
 end
 
 -- Generate the quad used to render the line between the two given nodes
