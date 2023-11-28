@@ -1,4 +1,4 @@
-use std::{fs, path::Path, result, sync::Arc};
+use std::{fs, path::Path, rc::Rc, result, sync::Arc};
 
 use chrono::prelude::*;
 use curl::easy::{Easy2, Handler, WriteError};
@@ -25,6 +25,30 @@ lazy_static! {
 }
 
 pub struct PathOfBuilding {}
+
+pub struct PathOfBuildingApi {
+    window: Arc<Window>,
+}
+
+impl PathOfBuildingApi {
+    // TODO: Is this supposed to be connection execute or?
+    fn set_title(&self, title: &str) -> Result<()> {
+        println!("Set title to {}", title);
+        self.window.window().set_title(title);
+        Ok(())
+    }
+}
+
+impl UserData for PathOfBuildingApi {
+    fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
+        // FIXME(tatu): Again just hacking around PWD being wrong for now
+        methods.add_method_mut("set_window_title", |_, this, title: String| {
+            this.set_title(&title)?;
+            println!("{}", title);
+            Ok(())
+        });
+    }
+}
 
 // TODO: Is this supposed to be connection execute or? Or console?
 fn con_execute(_ctx: &Lua, command: String) -> Result<()> {
@@ -157,7 +181,7 @@ fn draw_string_width(
 }
 
 // TODO: implement
-fn set_draw_color(_lua: &Lua, (args): (MultiValue)) -> Result<()> {
+fn set_draw_color(_lua: &Lua, args: MultiValue) -> Result<()> {
     println!("Set draw color to {:?}", args);
     Ok(())
 }
@@ -169,17 +193,17 @@ fn set_draw_color(_lua: &Lua, (args): (MultiValue)) -> Result<()> {
 // please fucking name them correctly, we ain't running out of disc space due to this and these two
 // letter variables ain't gonna win you the nobel price.
 fn draw_image(
-    lua: &Lua,
+    _lua: &Lua,
     (
         handle,
         viewport_x,
         viewport_y,
-        viewport_width,
-        viewport_height,
-        gigabrain_s1,
-        gigabrain_t1,
-        gigabrain_s2,
-        gigabrain_t2,
+        _viewport_width,
+        _viewport_height,
+        _gigabrain_s1,
+        _gigabrain_t1,
+        _gigabrain_s2,
+        _gigabrain_t2,
     ): (
         Value,
         f32,
@@ -209,17 +233,17 @@ fn set_draw_layer(_lua: &Lua, (layer_id, sublayer_id): (Option<i32>, Option<i32>
 }
 
 fn draw_image_quad(
-    lua: &Lua,
+    _lua: &Lua,
     (
         handle,
         viewport_x,
         viewport_y,
-        viewport_width,
-        viewport_height,
-        gigabrain_s1,
-        gigabrain_t1,
-        gigabrain_s2,
-        gigabrain_t2,
+        _viewport_width,
+        _viewport_height,
+        _gigabrain_s1,
+        _gigabrain_t1,
+        _gigabrain_s2,
+        _gigabrain_t2,
     ): (
         Value,
         f32,
@@ -269,7 +293,7 @@ struct ImageHandle {
 impl UserData for ImageHandle {
     fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
         // FIXME(tatu): Again just hacking around PWD being wrong for now
-        methods.add_method_mut("Load", |_, this, path: String| {
+        methods.add_method_mut("Load", |_, _this, path: String| {
             let full_path = Path::new("src").join(path);
 
             // RetainedImage::from_image_bytes(&response.url, &response.bytes)
@@ -293,7 +317,7 @@ impl UserData for ImageHandle {
         });
 
         // TOOD: implement
-        methods.add_method_mut("ImageSize", |_, this, _: ()| {
+        methods.add_method_mut("ImageSize", |_, _this, _: ()| {
             // let image = this.image.as_ref().expect("Calling ImageSize but no image exists! Either image is missing or you forgot to call Load!"); let size = image.size().expect("Could not calculate image size???");
 
             Ok((50, 50))
@@ -430,6 +454,35 @@ impl PathOfBuilding {
         // Initialize global functions and modules used by PoB
         let globals = lua.globals();
 
+        // Common setup for creating a winit window and imgui context, not specifc
+        // to this renderer at all except that glutin is used to create the window
+        // since it will give us access to a GL context
+        let (event_loop, window) = create_window();
+        let (mut winit_platform, mut imgui_context) = imgui_init(&window);
+
+        let window = Arc::new(window);
+
+        // OpenGL context from glow
+        let gl = glow_context(&window);
+
+        // OpenGL renderer from this crate
+        let mut ig_renderer = imgui_glow_renderer::AutoRenderer::initialize(gl, &mut imgui_context)
+            .expect("failed to create renderer");
+
+        // TODO: shit doesn't work, maybe move ownership to user data or something I dunno?
+        // TODO: DO I need to use scope? lua.scope(f)
+        // TODO: Can I just wrap everything under scope and never return?
+        let pob_api = lua.create_userdata(PathOfBuildingApi {
+            window: window.clone(),
+        })?;
+
+        // FIXME: Hacky shit. This does not give the API I was looking for. I'd like to do
+        // something like this eventually: pob.gui.set_window_title('Title') For now it's
+        // pob.gui:set_window_title('Title') (notice the colon).
+        let api_structure = lua.create_table()?;
+        api_structure.set("gui", pob_api)?;
+        globals.set("pob", api_structure)?;
+
         // Curl module hack, stolen from how nvim plugins work
         let require = globals.get::<_, Function>("require")?;
         let module = require.call::<_, Table>("lcurl.safe")?;
@@ -439,7 +492,7 @@ impl PathOfBuilding {
 
         // Setup some globals
         globals.set("ConExecute", lua.create_function(con_execute)?)?;
-        globals.set("SetWindowTitle", lua.create_function(set_window_title)?)?;
+        // globals.set("SetWindowTitle", lua.create_function(set_window_title)?)?;
         globals.set("SetMainObject", lua.create_function(set_main_object)?)?;
         globals.set("GetTime", lua.create_function(get_time)?)?;
         globals.set("RenderInit", lua.create_function(render_init)?)?;
@@ -480,19 +533,6 @@ impl PathOfBuilding {
         let launch = globals.get::<_, Table>("launch").unwrap();
         let on_frame: Function = launch.get::<_, Function>("OnFrame")?;
         on_frame.call::<_, ()>(launch)?;
-
-        // Common setup for creating a winit window and imgui context, not specifc
-        // to this renderer at all except that glutin is used to create the window
-        // since it will give us access to a GL context
-        let (event_loop, window) = create_window();
-        let (mut winit_platform, mut imgui_context) = imgui_init(&window);
-
-        // OpenGL context from glow
-        let gl = glow_context(&window);
-
-        // OpenGL renderer from this crate
-        let mut ig_renderer = imgui_glow_renderer::AutoRenderer::initialize(gl, &mut imgui_context)
-            .expect("failed to create renderer");
 
         let mut last_frame = Instant::now();
 

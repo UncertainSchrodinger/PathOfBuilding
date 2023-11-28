@@ -9,9 +9,20 @@ print(_VERSION)
 local startTime = GetTime()
 APP_NAME = "Path of Building"
 
+SetWindowTitle = function(title)
+	pob.gui:set_window_title(title)
+end
+
 SetWindowTitle(APP_NAME)
 ConExecute("set vid_mode 8")
 ConExecute("set vid_resizable 3")
+
+-- FIXME(tatu): disable io buffering so logs are in sync with rust side
+io.stdout:setvbuf("no")
+print("Started loading what")
+print("got", pob)
+print("more", pob.set_window_title)
+
 
 launch = {}
 SetMainObject(launch)
