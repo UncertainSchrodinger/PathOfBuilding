@@ -320,6 +320,7 @@ end
 
 function main:OnFrame()
 	self.screenW, self.screenH = GetScreenSize()
+	print("got width " .. self.screenW .. " height " .. self.screenH)
 
 	if self.screenH > self.screenW then
 		self.portraitMode = true

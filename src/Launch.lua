@@ -13,6 +13,10 @@ SetWindowTitle = function(title)
 	pob.gui:set_window_title(title)
 end
 
+GetScreenSize = function(title)
+	return pob.gui:get_screen_size()
+end
+
 SetWindowTitle(APP_NAME)
 ConExecute("set vid_mode 8")
 ConExecute("set vid_resizable 3")

@@ -507,7 +507,7 @@ impl PathOfBuilding {
         globals.set("LoadModule", lua.create_function(load_module)?)?;
         globals.set("PCall", lua.create_function(pcall)?)?;
         globals.set("ShowErrMsg", lua.create_function(show_err_message)?)?;
-        globals.set("GetScreenSize", lua.create_function(get_screen_size)?)?;
+        // globals.set("GetScreenSize", lua.create_function(get_screen_size)?)?;
         globals.set("GetScriptPath", lua.create_function(get_script_path)?)?;
         globals.set("MakeDir", lua.create_function(mkdir)?)?;
         globals.set("IsKeyDown", lua.create_function(is_key_down)?)?;
