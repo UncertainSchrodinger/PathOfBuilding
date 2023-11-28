@@ -24,3 +24,5 @@
 * fix mixed use of LoadModule/require/io.open
     * Likely io.open is used to detect if the file exists
         * for sure this is doable with just loadfile
+* add proper logging on both sides
+    * maybe log.info, log.debug etc on lua side and map same consepts to rust
