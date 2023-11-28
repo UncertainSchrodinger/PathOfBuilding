@@ -14,7 +14,7 @@ use glow::HasContext;
 use glutin::{event_loop::EventLoop, WindowedContext};
 use imgui_winit_support::WinitPlatform;
 
-const TITLE: &str = "Hello, imgui-rs!";
+const TITLE: &str = "Path of Building";
 
 type Window = WindowedContext<glutin::PossiblyCurrent>;
 
