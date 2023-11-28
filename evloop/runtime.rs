@@ -34,7 +34,7 @@ fn con_execute(_ctx: &Lua, command: String) -> Result<()> {
 
 // TODO: Is this supposed to be connection execute or?
 fn set_window_title(_ctx: &Lua, title: String) -> Result<()> {
-    println!("Title received {}", title);
+    println!("Set title to {}", title);
     Ok(())
 }
 
@@ -45,7 +45,7 @@ fn set_window_title(_ctx: &Lua, title: String) -> Result<()> {
 // that during app startup the current time is saved, then GetTime fetches that date, subtracts it
 // from current time and then finally converts the duration to millisecond duration!
 fn get_time(_ctx: &Lua, _: ()) -> Result<i64> {
-    println!("Get Time called {:?}", *START);
+    // println!("Get Time called {:?}", *START);
 
     let duration_since_start = Local::now() - *START;
     Ok(duration_since_start.num_milliseconds())
@@ -86,7 +86,7 @@ fn load_module<'a>(
         path = path.with_extension("lua");
     }
 
-    println!("pload module called {:?} with args {:?}", path, args);
+    // println!("pload module called {:?} with args {:?}", path, args);
     lua.load(path).call(args)
 }
 
@@ -547,7 +547,7 @@ fn create_window() -> (EventLoop<()>, Window) {
     let event_loop = glutin::event_loop::EventLoop::new();
     let window = glutin::window::WindowBuilder::new()
         .with_title(TITLE)
-        .with_inner_size(glutin::dpi::LogicalSize::new(1024, 768));
+        .with_inner_size(glutin::dpi::LogicalSize::new(1920, 1080));
     let window = glutin::ContextBuilder::new()
         .with_vsync(true)
         .build_windowed(window, &event_loop)
