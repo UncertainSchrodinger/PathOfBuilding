@@ -61,8 +61,8 @@ fn render_init(_ctx: &Lua, _: ()) -> Result<()> {
     Ok(())
 }
 
-fn con_printf(_ctx: &Lua, message: String) -> Result<()> {
-    println!("Printing {}", message);
+fn con_printf(_ctx: &Lua, args: MultiValue) -> Result<()> {
+    println!("Printing {:?}", args);
     Ok(())
 }
 
