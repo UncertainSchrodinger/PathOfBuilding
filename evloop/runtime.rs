@@ -1,4 +1,4 @@
-use std::{fs, path::Path, rc::Rc, result, sync::Arc};
+use std::{fs, path::Path, result, sync::Arc};
 
 use chrono::prelude::*;
 use curl::easy::{Easy2, Handler, WriteError};
@@ -63,10 +63,10 @@ fn con_execute(_ctx: &Lua, command: String) -> Result<()> {
 }
 
 // TODO: Is this supposed to be connection execute or?
-fn set_window_title(_ctx: &Lua, title: String) -> Result<()> {
-    println!("Set title to {}", title);
-    Ok(())
-}
+// fn set_window_title(_ctx: &Lua, title: String) -> Result<()> {
+//     println!("Set title to {}", title);
+//     Ok(())
+// }
 
 // TODO: Rename this to something like GetMillisecondsSinceStart.
 //
@@ -161,10 +161,10 @@ fn pcall<'a>(
 
 // TODO: implement fetching screen size
 // TODO: can this actually be negative resolution?
-fn get_screen_size(_ctx: &Lua, _: ()) -> Result<(i32, i32)> {
-    println!("GetScreenSize called");
-    Ok((1920, 1080))
-}
+// fn get_screen_size(_ctx: &Lua, _: ()) -> Result<(i32, i32)> {
+//     println!("GetScreenSize called");
+//     Ok((1920, 1080))
+// }
 
 // TODO: implement GetScriptPath
 fn get_script_path(_ctx: &Lua, _: ()) -> Result<String> {
@@ -299,8 +299,8 @@ struct ImageHandle {
 impl UserData for ImageHandle {
     fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
         // FIXME(tatu): Again just hacking around PWD being wrong for now
-        methods.add_method_mut("Load", |_, _this, path: String| {
-            let full_path = Path::new("src").join(path);
+        methods.add_method_mut("Load", |_, _this, _path: String| {
+            // let full_path = Path::new("src").join(path);
 
             // RetainedImage::from_image_bytes(&response.url, &response.bytes)
             // println!("loading image in path {:?}", &full_path);
