@@ -1,4 +1,4 @@
-use std::{fs, path::Path, result, sync::Arc};
+use std::{borrow::Cow, fs, path::Path, result, str::FromStr, sync::Arc};
 
 use chrono::prelude::*;
 use curl::easy::{Easy2, Handler, WriteError};
@@ -296,29 +296,55 @@ struct ImageHandle {
     // image: Option<Image<'a>>,
 }
 
+#[derive(Debug, PartialEq)]
+enum TextureFiltering {
+    // This is not supported by PoB and I have no idea what async filtering even means.
+    Async,
+    Clamp,
+    Mipmap,
+    Nearest,
+}
+
+impl FromStr for TextureFiltering {
+    type Err = ();
+
+    fn from_str(input: &str) -> result::Result<TextureFiltering, Self::Err> {
+        match input {
+            "ASYNC" => Ok(TextureFiltering::Async),
+            "CLAMP" => Ok(TextureFiltering::Clamp),
+            "MIPMAP" => Ok(TextureFiltering::Mipmap),
+            "NEAREST" => Ok(TextureFiltering::Nearest),
+            _ => Err(()),
+        }
+    }
+}
+
 impl UserData for ImageHandle {
     fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
         // FIXME(tatu): Again just hacking around PWD being wrong for now
-        methods.add_method_mut("Load", |_, _this, _path: String| {
-            // let full_path = Path::new("src").join(path);
+        methods.add_method_mut("Load", |_, _this, (path, flags): (String, MultiValue)| {
+            let flags: Vec<TextureFiltering> = flags
+                .iter()
+                .filter_map(|lua_value| lua_value.as_string_lossy())
+                .filter_map(|string_flag| TextureFiltering::from_str(&string_flag).ok())
+                .collect();
 
-            // RetainedImage::from_image_bytes(&response.url, &response.bytes)
-            // println!("loading image in path {:?}", &full_path);
+            println!("trying to load image {} with flags {:?}", path, flags);
+            let full_path = Path::new("src").join(path);
 
-            // let image_bytes = fs::read(&full_path)?;
+            // TODO(tatu): properly handle errors
             //
-            // println!(
-            //     "final uri {}",
-            //     format!("bytes://{}", full_path.to_string_lossy().into_owned())
-            // );
-            //
-            // this.image = Some(egui::Image::from_bytes(
-            //     format!("bytes://{}", full_path.to_string_lossy().into_owned()),
-            //     image_bytes,
-            // ));
-            //
-            // println!("{:?}", &this.image);
+            // Image asset extensions are not correct. Some are .png files but are actually .gif
+            // files. 'image' crate by default just decodes based on extension. We have to use
+            // further heuristics than that. SimpleGraphics does something similar by checking for
+            // magic bytes for a couple of formats.
+            let image = image::io::Reader::open(full_path)?
+                .with_guessed_format()
+                .expect("Could not detect image format, what are you feeding us bröther?")
+                .decode()
+                .expect("Could not decode image, what are you feeding us bröther?");
 
+            // TODO: Load to texture
             Ok(())
         });
 
