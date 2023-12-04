@@ -1,3 +1,9 @@
+## Next
+
+* load images to textures
+
+## Backlog
+
 * lua code quality tools for linting and styling
 * move python scripts to lua
 * automate fetching passive skill trees
