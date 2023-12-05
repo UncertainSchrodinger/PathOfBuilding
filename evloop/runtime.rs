@@ -2,6 +2,7 @@ use std::{borrow::Cow, fs, path::Path, result, str::FromStr, sync::Arc};
 
 use chrono::prelude::*;
 use curl::easy::{Easy2, Handler, WriteError};
+use imgui_glow_renderer::Renderer;
 use lazy_static::lazy_static;
 use mlua::{
     AnyUserData, Error, Function, Lua, LuaOptions, MultiValue, RegistryKey, Result, StdLib, Table,
@@ -497,8 +498,16 @@ impl PathOfBuilding {
         // OpenGL context from glow
         let gl = glow_context(&window);
 
-        // OpenGL renderer from this crate
-        let mut ig_renderer = imgui_glow_renderer::AutoRenderer::initialize(gl, &mut imgui_context)
+        // This time, we tell OpenGL this is an sRGB framebuffer and OpenGL will
+        // do the conversion to sSGB space for us after the fragment shader.
+        unsafe { gl.enable(glow::FRAMEBUFFER_SRGB) };
+
+        let mut textures = imgui::Textures::<glow::Texture>::default();
+
+        // Note that `output_srgb` is `false`. This is because we set
+        // `glow::FRAMEBUFFER_SRGB` so we don't have to manually do the conversion
+        // in the shader.
+        let mut ig_renderer = Renderer::initialize(&gl, &mut imgui_context, &mut textures, false)
             .expect("failed to create renderer");
 
         // TODO: shit doesn't work, maybe move ownership to user data or something I dunno?
@@ -586,7 +595,7 @@ impl PathOfBuilding {
                 }
                 glutin::event::Event::RedrawRequested(_) => {
                     // The renderer assumes you'll be clearing the buffer yourself
-                    unsafe { ig_renderer.gl_context().clear(glow::COLOR_BUFFER_BIT) };
+                    unsafe { gl.clear(glow::COLOR_BUFFER_BIT) };
 
                     let ui = imgui_context.frame();
                     ui.show_demo_window(&mut true);
@@ -596,7 +605,7 @@ impl PathOfBuilding {
 
                     // This is the only extra render step to add
                     ig_renderer
-                        .render(draw_data)
+                        .render(&gl, &textures, draw_data)
                         .expect("error rendering imgui");
 
                     window.swap_buffers().unwrap();
