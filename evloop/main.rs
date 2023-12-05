@@ -7,6 +7,6 @@ mod runtime;
 type Result<T> = result::Result<T, Box<dyn Error>>;
 
 fn main() -> Result<()> {
-    let pob = PathOfBuilding {};
+    let pob = PathOfBuilding::create();
     Ok(pob.start()?)
 }

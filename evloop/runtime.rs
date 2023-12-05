@@ -2,6 +2,7 @@ use std::{borrow::Cow, fs, path::Path, result, str::FromStr, sync::Arc};
 
 use chrono::prelude::*;
 use curl::easy::{Easy2, Handler, WriteError};
+use imgui::{Context, Textures};
 use imgui_glow_renderer::Renderer;
 use lazy_static::lazy_static;
 use mlua::{
@@ -11,7 +12,7 @@ use mlua::{
 
 use std::time::Instant;
 
-use glow::HasContext;
+use glow::{Context as GlowContext, HasContext};
 use glutin::{event_loop::EventLoop, WindowedContext};
 use imgui_winit_support::WinitPlatform;
 
@@ -24,8 +25,6 @@ type Window = WindowedContext<glutin::PossiblyCurrent>;
 lazy_static! {
     static ref START: DateTime<Local> = Local::now();
 }
-
-pub struct PathOfBuilding {}
 
 pub struct PathOfBuildingApi {
     window: Arc<Window>,
@@ -473,36 +472,40 @@ fn new_curl_easy(lua: &Lua, _: ()) -> Result<AnyUserData> {
     })
 }
 
+pub struct PathOfBuilding {
+    lua: Lua,
+    window: Arc<Window>,
+    event_loop: EventLoop<()>,
+    winit_platform: WinitPlatform,
+    imgui_context: Context,
+    gl: GlowContext,
+    textures: Textures<glow::Texture>,
+}
+
 impl PathOfBuilding {
     pub fn start(self) -> Result<()> {
-        curl::init();
-
-        // FIXME: Likely slowsdown usage due to debug
-        let lua = unsafe { Lua::unsafe_new_with(StdLib::ALL, LuaOptions::default()) };
+        // FIXME: Crap left over from refactoring. Moving stuff around as I need to pass textures
+        // to ImageHandle to be able to load images to textures.
+        let lua = self.lua;
+        let event_loop = self.event_loop;
+        let window = self.window;
+        let mut winit_platform = self.winit_platform;
+        let mut imgui_context = self.imgui_context;
+        let gl = self.gl;
+        let mut textures = self.textures;
 
         // Set load path
         lua.load("package.path = package.path .. ';./lua/?.lua' .. ';./src/?.lua' .. ';./runtime/lua/?.lua' .. ';./runtime/lua/?/init.lua'")
             .exec()?;
 
+        curl::init();
+
         // Initialize global functions and modules used by PoB
         let globals = lua.globals();
-
-        // Common setup for creating a winit window and imgui context, not specifc
-        // to this renderer at all except that glutin is used to create the window
-        // since it will give us access to a GL context
-        let (event_loop, window) = create_window();
-        let (mut winit_platform, mut imgui_context) = imgui_init(&window);
-
-        let window = Arc::new(window);
-
-        // OpenGL context from glow
-        let gl = glow_context(&window);
 
         // This time, we tell OpenGL this is an sRGB framebuffer and OpenGL will
         // do the conversion to sSGB space for us after the fragment shader.
         unsafe { gl.enable(glow::FRAMEBUFFER_SRGB) };
-
-        let mut textures = imgui::Textures::<glow::Texture>::default();
 
         // Note that `output_srgb` is `false`. This is because we set
         // `glow::FRAMEBUFFER_SRGB` so we don't have to manually do the conversion
@@ -621,6 +624,34 @@ impl PathOfBuilding {
                 }
             }
         });
+    }
+
+    pub fn create() -> Self {
+        // FIXME: Likely slowsdown usage due to debug
+        let lua = unsafe { Lua::unsafe_new_with(StdLib::ALL, LuaOptions::default()) };
+
+        // Common setup for creating a winit window and imgui context, not specifc
+        // to this renderer at all except that glutin is used to create the window
+        // since it will give us access to a GL context
+        let (event_loop, window) = create_window();
+        let window = Arc::new(window);
+
+        let (winit_platform, imgui_context) = imgui_init(&window);
+
+        // OpenGL context from glow
+        let gl = glow_context(&window);
+
+        let textures = imgui::Textures::<glow::Texture>::default();
+
+        PathOfBuilding {
+            lua,
+            window,
+            event_loop,
+            winit_platform,
+            imgui_context,
+            gl,
+            textures,
+        }
     }
 }
 
