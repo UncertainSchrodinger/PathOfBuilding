@@ -1,8 +1,14 @@
-use std::{borrow::Cow, fs, path::Path, result, str::FromStr, sync::Arc};
+use std::{
+    fs,
+    path::Path,
+    result,
+    str::FromStr,
+    sync::{Arc, Mutex},
+};
 
 use chrono::prelude::*;
 use curl::easy::{Easy2, Handler, WriteError};
-use imgui::{Context, Textures};
+use imgui::{Context, TextureId, Textures};
 use imgui_glow_renderer::Renderer;
 use lazy_static::lazy_static;
 use mlua::{
@@ -12,7 +18,7 @@ use mlua::{
 
 use std::time::Instant;
 
-use glow::{Context as GlowContext, HasContext};
+use glow::{Context as GlowContext, HasContext, NativeTexture};
 use glutin::{event_loop::EventLoop, WindowedContext};
 use imgui_winit_support::WinitPlatform;
 
@@ -172,9 +178,9 @@ fn get_script_path(_ctx: &Lua, _: ()) -> Result<String> {
 }
 
 // TODO: this should probably load into a texture or something?
-fn new_image_handle(lua: &Lua, _: ()) -> Result<AnyUserData> {
-    lua.create_userdata(ImageHandle {})
-}
+// fn new_image_handle(lua: &Lua, _: ()) -> Result<AnyUserData> {
+//     lua.create_userdata(ImageHandle {})
+// }
 
 // TODO: implement
 // XXX: This method is just named funky, it doesn't actually draw the width of the string. It
@@ -293,7 +299,7 @@ fn draw_string(
 // possibly have a shitty handle? Just pass a path to the handle and abort right away if it doesn't
 // work!
 struct ImageHandle {
-    // image: Option<Image<'a>>,
+    textures: Arc<Mutex<Textures<glow::Texture>>>,
 }
 
 #[derive(Debug, PartialEq)]
@@ -343,6 +349,8 @@ impl UserData for ImageHandle {
                 .expect("Could not detect image format, what are you feeding us bröther?")
                 .decode()
                 .expect("Could not decode image, what are you feeding us bröther?");
+
+            let bytes = image.as_bytes();
 
             // TODO: Load to texture
             Ok(())
@@ -479,7 +487,7 @@ pub struct PathOfBuilding {
     winit_platform: WinitPlatform,
     imgui_context: Context,
     gl: GlowContext,
-    textures: Textures<glow::Texture>,
+    textures: Arc<Mutex<Textures<NativeTexture>>>,
 }
 
 impl PathOfBuilding {
@@ -492,7 +500,6 @@ impl PathOfBuilding {
         let mut winit_platform = self.winit_platform;
         let mut imgui_context = self.imgui_context;
         let gl = self.gl;
-        let mut textures = self.textures;
 
         // Set load path
         lua.load("package.path = package.path .. ';./lua/?.lua' .. ';./src/?.lua' .. ';./runtime/lua/?.lua' .. ';./runtime/lua/?/init.lua'")
@@ -510,8 +517,14 @@ impl PathOfBuilding {
         // Note that `output_srgb` is `false`. This is because we set
         // `glow::FRAMEBUFFER_SRGB` so we don't have to manually do the conversion
         // in the shader.
-        let mut ig_renderer = Renderer::initialize(&gl, &mut imgui_context, &mut textures, false)
-            .expect("failed to create renderer");
+
+        let textures = self.textures.clone();
+
+        let mut ig_renderer = {
+            let mut textures = textures.lock().unwrap();
+            Renderer::initialize(&gl, &mut imgui_context, &mut *textures, false)
+                .expect("failed to create renderer")
+        };
 
         // TODO: shit doesn't work, maybe move ownership to user data or something I dunno?
         // TODO: DO I need to use scope? lua.scope(f)
@@ -549,7 +562,16 @@ impl PathOfBuilding {
         globals.set("GetScriptPath", lua.create_function(get_script_path)?)?;
         globals.set("MakeDir", lua.create_function(mkdir)?)?;
         globals.set("IsKeyDown", lua.create_function(is_key_down)?)?;
-        globals.set("NewImageHandle", lua.create_function(new_image_handle)?)?;
+
+        let textures = self.textures.clone();
+        globals.set(
+            "NewImageHandle",
+            lua.create_function(move |lua: &Lua, _: ()| {
+                lua.create_userdata(ImageHandle {
+                    textures: textures.clone(),
+                })
+            })?,
+        )?;
         globals.set("DrawStringWidth", lua.create_function(draw_string_width)?)?;
         globals.set("GetCursorPos", lua.create_function(get_cursor_position)?)?;
         globals.set("SetDrawColor", lua.create_function(set_draw_color)?)?;
@@ -580,6 +602,8 @@ impl PathOfBuilding {
 
         let mut last_frame = Instant::now();
 
+        let textures = self.textures.clone();
+
         // Standard winit event loop
         event_loop.run(move |event, _, control_flow| {
             match event {
@@ -606,9 +630,10 @@ impl PathOfBuilding {
                     winit_platform.prepare_render(ui, window.window());
                     let draw_data = imgui_context.render();
 
+                    let unlocked = textures.lock().unwrap();
                     // This is the only extra render step to add
                     ig_renderer
-                        .render(&gl, &textures, draw_data)
+                        .render(&gl, &*unlocked, draw_data)
                         .expect("error rendering imgui");
 
                     window.swap_buffers().unwrap();
@@ -641,7 +666,7 @@ impl PathOfBuilding {
         // OpenGL context from glow
         let gl = glow_context(&window);
 
-        let textures = imgui::Textures::<glow::Texture>::default();
+        let textures = Arc::new(Mutex::new(imgui::Textures::<glow::Texture>::default()));
 
         PathOfBuilding {
             lua,
