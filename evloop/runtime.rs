@@ -8,7 +8,7 @@ use std::{
 
 use chrono::prelude::*;
 use curl::easy::{Easy2, Handler, WriteError};
-use imgui::{Context, TextureId, Textures};
+use imgui::{Context, Textures};
 use imgui_glow_renderer::Renderer;
 use lazy_static::lazy_static;
 use mlua::{
@@ -486,7 +486,8 @@ pub struct PathOfBuilding {
     event_loop: EventLoop<()>,
     winit_platform: WinitPlatform,
     imgui_context: Context,
-    gl: GlowContext,
+    // TODO: Maybe it would be better to just have channels for these?
+    gl: Arc<Mutex<GlowContext>>,
     textures: Arc<Mutex<Textures<NativeTexture>>>,
 }
 
@@ -499,7 +500,6 @@ impl PathOfBuilding {
         let window = self.window;
         let mut winit_platform = self.winit_platform;
         let mut imgui_context = self.imgui_context;
-        let gl = self.gl;
 
         // Set load path
         lua.load("package.path = package.path .. ';./lua/?.lua' .. ';./src/?.lua' .. ';./runtime/lua/?.lua' .. ';./runtime/lua/?/init.lua'")
@@ -510,9 +510,14 @@ impl PathOfBuilding {
         // Initialize global functions and modules used by PoB
         let globals = lua.globals();
 
+        let gl = self.gl.clone();
+
         // This time, we tell OpenGL this is an sRGB framebuffer and OpenGL will
         // do the conversion to sSGB space for us after the fragment shader.
-        unsafe { gl.enable(glow::FRAMEBUFFER_SRGB) };
+        unsafe {
+            let gl = gl.lock().unwrap();
+            gl.enable(glow::FRAMEBUFFER_SRGB)
+        };
 
         // Note that `output_srgb` is `false`. This is because we set
         // `glow::FRAMEBUFFER_SRGB` so we don't have to manually do the conversion
@@ -520,7 +525,10 @@ impl PathOfBuilding {
 
         let textures = self.textures.clone();
 
+        let gl = self.gl.clone();
+
         let mut ig_renderer = {
+            let gl = gl.lock().unwrap();
             let mut textures = textures.lock().unwrap();
             Renderer::initialize(&gl, &mut imgui_context, &mut *textures, false)
                 .expect("failed to create renderer")
@@ -603,6 +611,7 @@ impl PathOfBuilding {
         let mut last_frame = Instant::now();
 
         let textures = self.textures.clone();
+        let gl_lock = self.gl.clone();
 
         // Standard winit event loop
         event_loop.run(move |event, _, control_flow| {
@@ -621,6 +630,8 @@ impl PathOfBuilding {
                     window.window().request_redraw();
                 }
                 glutin::event::Event::RedrawRequested(_) => {
+                    let gl = gl_lock.lock().unwrap();
+
                     // The renderer assumes you'll be clearing the buffer yourself
                     unsafe { gl.clear(glow::COLOR_BUFFER_BIT) };
 
@@ -664,7 +675,7 @@ impl PathOfBuilding {
         let (winit_platform, imgui_context) = imgui_init(&window);
 
         // OpenGL context from glow
-        let gl = glow_context(&window);
+        let gl = Arc::new(Mutex::new(glow_context(&window)));
 
         let textures = Arc::new(Mutex::new(imgui::Textures::<glow::Texture>::default()));
 
