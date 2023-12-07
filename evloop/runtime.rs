@@ -8,7 +8,7 @@ use std::{
 
 use chrono::prelude::*;
 use curl::easy::{Easy2, Handler, WriteError};
-use imgui::{Context, Textures};
+use imgui::{Context, TextureId, Textures};
 use imgui_glow_renderer::Renderer;
 use lazy_static::lazy_static;
 use mlua::{
@@ -300,6 +300,13 @@ fn draw_string(
 // work!
 struct ImageHandle {
     textures: Arc<Mutex<Textures<glow::Texture>>>,
+    gl: Arc<Mutex<glow::Context>>,
+    texture_id: Option<TextureId>,
+
+    // Glow or OpenGL requires these to be signed. I don't know what it means for a texture to have
+    // negative dimensions.
+    width: i32,
+    height: i32,
 }
 
 #[derive(Debug, PartialEq)]
@@ -328,7 +335,7 @@ impl FromStr for TextureFiltering {
 impl UserData for ImageHandle {
     fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
         // FIXME(tatu): Again just hacking around PWD being wrong for now
-        methods.add_method_mut("Load", |_, _this, (path, flags): (String, MultiValue)| {
+        methods.add_method_mut("Load", |_, this, (path, flags): (String, MultiValue)| {
             let flags: Vec<TextureFiltering> = flags
                 .iter()
                 .filter_map(|lua_value| lua_value.as_string_lossy())
@@ -351,16 +358,53 @@ impl UserData for ImageHandle {
                 .expect("Could not decode image, what are you feeding us bröther?");
 
             let bytes = image.as_bytes();
+            this.width = image.width() as i32;
+            this.height = image.height() as i32;
+
+            let gl = this.gl.lock().unwrap();
+
+            let gl_texture = unsafe {
+                let gl_texture = gl.create_texture().expect("unable to create GL texture");
+                gl.bind_texture(glow::TEXTURE_2D, Some(gl_texture));
+                gl.tex_parameter_i32(
+                    glow::TEXTURE_2D,
+                    glow::TEXTURE_MIN_FILTER,
+                    glow::LINEAR as _,
+                );
+                gl.tex_parameter_i32(
+                    glow::TEXTURE_2D,
+                    glow::TEXTURE_MAG_FILTER,
+                    glow::LINEAR as _,
+                );
+                gl.tex_image_2d(
+                    glow::TEXTURE_2D,
+                    0,
+                    glow::SRGB as _, // image file has sRGB encoded colors
+                    this.width as _,
+                    this.height as _,
+                    0,
+                    glow::RGB,
+                    glow::UNSIGNED_BYTE,
+                    Some(&bytes),
+                );
+                gl_texture
+            };
+
+            let mut textures = this.textures.lock().unwrap();
+            let texture_id = textures.insert(gl_texture);
+
+            println!("Generated texture with id {:?}", texture_id);
+            this.texture_id = Some(texture_id);
 
             // TODO: Load to texture
             Ok(())
         });
 
         // TOOD: implement
-        methods.add_method_mut("ImageSize", |_, _this, _: ()| {
+        methods.add_method_mut("ImageSize", |_, this, _: ()| {
             // let image = this.image.as_ref().expect("Calling ImageSize but no image exists! Either image is missing or you forgot to call Load!"); let size = image.size().expect("Could not calculate image size???");
 
-            Ok((50, 50))
+            Ok((this.width, this.height))
         });
     }
 }
@@ -577,6 +621,10 @@ impl PathOfBuilding {
             lua.create_function(move |lua: &Lua, _: ()| {
                 lua.create_userdata(ImageHandle {
                     textures: textures.clone(),
+                    gl: gl.clone(),
+                    width: 0,
+                    height: 0,
+                    texture_id: None,
                 })
             })?,
         )?;
@@ -635,7 +683,8 @@ impl PathOfBuilding {
                     // The renderer assumes you'll be clearing the buffer yourself
                     unsafe { gl.clear(glow::COLOR_BUFFER_BIT) };
 
-                    let ui = imgui_context.frame();
+                    let ui = imgui_context.new_frame();
+
                     ui.show_demo_window(&mut true);
 
                     winit_platform.prepare_render(ui, window.window());
